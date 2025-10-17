@@ -35,11 +35,15 @@ module.exports = {
           }
         }]
       },
+      {
+        test: /\.json$/,
+        type: 'json'
+      },
     ],
   },
   resolve: {
     modules: ['node_modules'],
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.json'],
   },
   entry: {
     demo: './demo/index.ts',
