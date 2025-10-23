@@ -76,7 +76,7 @@ const scatterGL = new ScatterGL(containerElement, {
   },
   renderMode: RenderMode.POINT,
   orbitControls: {
-    zoomSpeed: 1.125,
+    zoomSpeed: 1.15,
   },
 });
 scatterGL.render(dataset);
@@ -113,15 +113,30 @@ document
     });
   });
 
-const hues = [...new Array(10)].map((_, i) => Math.floor((255 / 10) * i));
+  // Label-based palette for the demo (index 0 is gray)
+const LABEL_PALETTE: string[] = [
+  '#dbdbdb', // label 0
+  '#b20014',
+  '#8a3dff',
+  '#008a00',
+  '#eba600',
+  '#ff7dd2',
+  '#00baf7',
+  '#04ff35',
+  '#a60082',
+  '#0071c6',
+  '#ff7561',
+  '#db00ff',
+  '#00f7be',
+  '#8eb61c',
+  '#fb0079',
+  '#be6100',
+];
 
-const lightTransparentColorsByLabel = hues.map(
-  hue => `hsla(${hue}, 100%, 50%, 0.05)`
-);
-const heavyTransparentColorsByLabel = hues.map(
-  hue => `hsla(${hue}, 100%, 50%, 0.75)`
-);
-const opaqueColorsByLabel = hues.map(hue => `hsla(${hue}, 100%, 60%, 1)`);
+function colorByLabelIndex(i: number): string {
+  const idx = data.labels[i] ?? 0;
+  return LABEL_PALETTE[idx % LABEL_PALETTE.length];
+}
 
 document
   .querySelectorAll<HTMLInputElement>('input[name="color"]')
@@ -132,26 +147,8 @@ document
       } else if (inputElement.value === 'label') {
         scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
           const labelIndex = dataset.metadata![i]['labelIndex'] as number;
-          const opaque = renderMode !== 'points';
-          if (opaque) {
-            return opaqueColorsByLabel[labelIndex];
-          } else {
-            if (hoverIndex === i) {
-              return 'red';
-            }
-
-            // If nothing is selected, return the heavy color
-            if (selectedIndices.size === 0) {
-              return heavyTransparentColorsByLabel[labelIndex];
-            }
-            // Otherwise, keep the selected points heavy and non-selected light
-            else {
-              const isSelected = selectedIndices.has(i);
-              return isSelected
-                ? heavyTransparentColorsByLabel[labelIndex]
-                : lightTransparentColorsByLabel[labelIndex];
-            }
-          }
+          // Use colors from LABEL_PALETTE for all render modes
+          return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
         });
       }
     });

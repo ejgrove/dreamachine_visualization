@@ -182,7 +182,7 @@ const makeDefaultStyles = () => {
 
     sprites: {
       minPointSize: 5.0,
-      imageSize: 30,
+      imageSize: 50,
       colorUnselected: '#ffffff',
       colorNoSelection: '#ffffff',
     },

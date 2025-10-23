@@ -131,7 +131,22 @@ const FRAGMENT_SHADER = `
         // Coordinates of the vertex within the entire sprite image.
         vec2 coords =
           (gl_PointCoord + xyIndex) / vec2(spritesPerRow, spritesPerColumn);
-        gl_FragColor = vColor * texture(spriteTexture, coords);
+        vec4 texColor = texture(spriteTexture, coords);
+
+        // Calculate square border (border thickness: adjust borderWidth)
+        float borderWidth = 0.03; // Thickness of the border
+        vec2 coord = gl_PointCoord;
+
+        // Check if we're in the border region (edge of the square sprite)
+        bool inBorder = (coord.x < borderWidth || coord.x > (1.0 - borderWidth) ||
+                        coord.y < borderWidth || coord.y > (1.0 - borderWidth));
+
+        // If in border and texture has content, use the label color, otherwise use the texture
+        if (inBorder && texColor.a > 0.1) {
+          gl_FragColor = vColor;
+        } else {
+          gl_FragColor = texColor;
+        }
       } else {
         bool inside = point_in_unit_circle(gl_PointCoord);
         if (!inside) {
@@ -282,7 +297,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
       this.worldSpacePointPositions != null
         ? this.worldSpacePointPositions.length / XYZ_NUM_ELEMENTS
         : 1;
-    const SCALE = 200;
+    const SCALE = 0;
     const LOG_BASE = 8;
     const DIVISOR = 1.5;
     // Scale point size inverse-logarithmically to the number of points.
