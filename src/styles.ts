@@ -156,8 +156,8 @@ const makeDefaultStyles = () => {
       colorSelected: 'rgba(250, 102, 102, 0.7)',
       colorHover: 'rgba(118, 11, 79, 0.7)',
       scaleDefault: 1.0,
-      scaleSelected: 1.2,
-      scaleHover: 1.2,
+      scaleSelected: 1.5,
+      scaleHover: 1.5,
     },
 
     polyline: {

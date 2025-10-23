@@ -223,6 +223,7 @@ export class ScatterGL {
   private onHover = (pointIndex: number | null) => {
     this.hoverCallback(pointIndex);
     this.hoverPointIndex = pointIndex;
+    this.updateScatterPlotPositions(); // Update positions to bring to front
     this.updateScatterPlotAttributes();
     this.renderScatterPlot();
   };
@@ -234,6 +235,7 @@ export class ScatterGL {
   select = (pointIndices: number[]) => {
     if (!this.selectEnabled) return;
     this.selectedPointIndices = new Set(pointIndices);
+    this.updateScatterPlotPositions(); // Update positions to bring to front
     this.updateScatterPlotAttributes();
     this.renderScatterPlot();
   };
@@ -337,17 +339,25 @@ export class ScatterGL {
     const positions = new Float32Array(dataset.points.length * 3);
     let dst = 0;
 
+    const Z_OFFSET_HOVER = 0.01; // Small offset to bring hovered/selected to front
+
     dataset.points.forEach((d, i) => {
       const vector = dataset.points[i];
 
       positions[dst++] = util.scaleLinear(vector[0], xExtent, xScale);
       positions[dst++] = util.scaleLinear(vector[1], yExtent, yScale);
 
+      let zPos = 0.0;
       if (dataset.dimensions === 3) {
-        positions[dst++] = util.scaleLinear(vector[2]!, zExtent, zScale);
-      } else {
-        positions[dst++] = 0.0;
+        zPos = util.scaleLinear(vector[2]!, zExtent, zScale);
       }
+
+      // Bring hovered or selected points to the front
+      if (i === this.hoverPointIndex || this.selectedPointIndices.has(i)) {
+        zPos += Z_OFFSET_HOVER;
+      }
+
+      positions[dst++] = zPos;
     });
     return positions;
   }
