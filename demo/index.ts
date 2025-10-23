@@ -35,6 +35,18 @@ data.projection.forEach((vector, index) => {
 const sequences = makeSequences(dataPoints, metadata);
 const dataset = new Dataset(dataPoints, metadata);
 
+// Create filtered dataset without noise (label -1)
+const filteredDataPoints: Point3D[] = [];
+const filteredMetadata: PointMetadata[] = [];
+dataPoints.forEach((point, index) => {
+  const labelIndex = metadata[index].labelIndex;
+  if (labelIndex !== 0) {
+    filteredDataPoints.push(point);
+    filteredMetadata.push(metadata[index]);
+  }
+});
+const filteredDataset = new Dataset(filteredDataPoints, filteredMetadata);
+
 dataset.setSpriteMetadata({
   spriteImage: 'sprite.png',
   singleSpriteSize: [50, 50],
@@ -42,8 +54,15 @@ dataset.setSpriteMetadata({
   // spriteIndices: dataPoints.map(d => 0),
 });
 
+filteredDataset.setSpriteMetadata({
+  spriteImage: 'sprite.png',
+  singleSpriteSize: [50, 50],
+});
+
 let lastSelectedPoints: number[] = [];
 let renderMode = 'points';
+let showNoise = true;
+let currentDataset = dataset;
 
 const containerElement = document.getElementById('container')!;
 const messagesElement = document.getElementById('messages')!;
@@ -79,7 +98,7 @@ const scatterGL = new ScatterGL(containerElement, {
     zoomSpeed: 1.15,
   },
 });
-scatterGL.render(dataset);
+scatterGL.render(currentDataset);
 
 // Add in a resize observer for automatic window resize.
 window.addEventListener('resize', () => {
@@ -146,10 +165,36 @@ document
         scatterGL.setPointColorer(null);
       } else if (inputElement.value === 'label') {
         scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
-          const labelIndex = dataset.metadata![i]['labelIndex'] as number;
+          const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
           // Use colors from LABEL_PALETTE for all render modes
           return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
         });
       }
     });
   });
+
+// Show Noise toggle
+const showNoiseToggle = document.querySelector<HTMLInputElement>(
+  'input[name="showNoise"]'
+)!;
+showNoiseToggle.addEventListener('change', () => {
+  showNoise = showNoiseToggle.checked;
+  currentDataset = showNoise ? dataset : filteredDataset;
+  scatterGL.render(currentDataset);
+
+  // Re-apply current render mode
+  if (renderMode === 'sprites') {
+    scatterGL.setSpriteRenderMode();
+  } else {
+    scatterGL.setPointRenderMode();
+  }
+
+  // Re-apply current coloring if label coloring is active
+  const labelColorInput = document.querySelector<HTMLInputElement>('input[name="color"][value="label"]');
+  if (labelColorInput && labelColorInput.checked) {
+    scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
+      const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
+      return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+    });
+  }
+});
