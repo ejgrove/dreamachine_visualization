@@ -38,11 +38,13 @@ const dataset = new Dataset(dataPoints, metadata);
 // Create filtered dataset without noise (label -1)
 const filteredDataPoints: Point3D[] = [];
 const filteredMetadata: PointMetadata[] = [];
+const filteredSpriteIndices: number[] = [];
 dataPoints.forEach((point, index) => {
   const labelIndex = metadata[index].labelIndex;
   if (labelIndex !== 0) {
     filteredDataPoints.push(point);
     filteredMetadata.push(metadata[index]);
+    filteredSpriteIndices.push(index); // Keep original index for sprite mapping
   }
 });
 const filteredDataset = new Dataset(filteredDataPoints, filteredMetadata);
@@ -57,6 +59,7 @@ dataset.setSpriteMetadata({
 filteredDataset.setSpriteMetadata({
   spriteImage: 'sprite.png',
   singleSpriteSize: [50, 50],
+  spriteIndices: filteredSpriteIndices,
 });
 
 let lastSelectedPoints: number[] = [];
@@ -94,6 +97,7 @@ const scatterGL = new ScatterGL(containerElement, {
     setMessage(message);
   },
   renderMode: RenderMode.POINT,
+  selectEnabled: false,
   orbitControls: {
     zoomSpeed: 1.15,
   },
@@ -104,18 +108,6 @@ scatterGL.render(currentDataset);
 window.addEventListener('resize', () => {
   scatterGL.resize();
 });
-
-document
-  .querySelectorAll<HTMLInputElement>('input[name="interactions"]')
-  .forEach(inputElement => {
-    inputElement.addEventListener('change', () => {
-      if (inputElement.value === 'pan') {
-        scatterGL.setPanMode();
-      } else if (inputElement.value === 'select') {
-        scatterGL.setSelectMode();
-      }
-    });
-  });
 
 document
   .querySelectorAll<HTMLInputElement>('input[name="render"]')
