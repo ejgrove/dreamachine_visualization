@@ -153,35 +153,3 @@ document
       }
     });
   });
-
-const dimensionsToggle = document.querySelector<HTMLInputElement>(
-  'input[name="3D"]'
-)!;
-dimensionsToggle.addEventListener('change', (e: any) => {
-  const is3D = dimensionsToggle.checked;
-  scatterGL.setDimensions(is3D ? 3 : 2);
-});
-
-const sequencesToggle = document.querySelector<HTMLInputElement>(
-  'input[name="sequences"]'
-)!;
-sequencesToggle.addEventListener('change', (e: any) => {
-  const showSequences = sequencesToggle.checked;
-  scatterGL.setSequences(showSequences ? sequences : []);
-});
-
-// Set up controls for buttons
-const selectRandomButton = document.getElementById('select-random')!;
-selectRandomButton.addEventListener('click', () => {
-  const randomIndex = Math.floor(dataPoints.length * Math.random());
-  scatterGL.select([randomIndex]);
-});
-
-const toggleOrbitButton = document.getElementById('toggle-orbit')!;
-toggleOrbitButton.addEventListener('click', () => {
-  if (scatterGL.isOrbiting()) {
-    scatterGL.stopOrbitAnimation();
-  } else {
-    scatterGL.startOrbitAnimation();
-  }
-});
