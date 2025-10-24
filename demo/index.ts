@@ -125,9 +125,25 @@ const drawSprite = (pointIndex: number) => {
   );
 };
 
+let selectedPointIndex: number | null = null;
+
 const scatterGL = new ScatterGL(containerElement, {
   onHover: (point: number | null) => {
     updateHoverInfo(point);
+  },
+  onClick: (point: number | null) => {
+    if (point === null) {
+      // Click on empty space - deselect
+      selectedPointIndex = null;
+    } else {
+      // Click on a point - select it
+      selectedPointIndex = point;
+    }
+    // Trigger color update
+    const labelColorInput = document.querySelector<HTMLInputElement>('input[name="color"][value="label"]');
+    if (labelColorInput && labelColorInput.checked) {
+      labelColorInput.dispatchEvent(new Event('change'));
+    }
   },
   renderMode: RenderMode.POINT,
   selectEnabled: false,
@@ -189,10 +205,25 @@ document
     inputElement.addEventListener('change', () => {
       if (inputElement.value === 'default') {
         scatterGL.setPointColorer(null);
+        selectedPointIndex = null; // Reset selection when switching to default
       } else if (inputElement.value === 'label') {
         scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
           const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
-          // Use colors from LABEL_PALETTE for all render modes
+
+          // If a point is selected, dim other clusters
+          if (selectedPointIndex !== null) {
+            const selectedLabelIndex = currentDataset.metadata![selectedPointIndex]['labelIndex'] as number;
+
+            // If it's the same label as the selected point, keep normal color
+            if (labelIndex === selectedLabelIndex) {
+              return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+            }
+
+            // Otherwise, return a desaturated, low-opacity grayscale
+            return 'rgba(200, 200, 200, 0.3)';
+          }
+
+          // No selection - use normal colors from LABEL_PALETTE
           return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
         });
       }

@@ -141,11 +141,23 @@ const FRAGMENT_SHADER = `
         bool inBorder = (coord.x < borderWidth || coord.x > (1.0 - borderWidth) ||
                         coord.y < borderWidth || coord.y > (1.0 - borderWidth));
 
-        // If in border and texture has content, use the label color, otherwise use the texture
+        // Check if vColor is grayscale (desaturated) by checking if RGB components are similar
+        float colorDiff = abs(vColor.r - vColor.g) + abs(vColor.g - vColor.b) + abs(vColor.b - vColor.r);
+        bool isGrayscale = colorDiff < 0.1;
+        
+        // If in border and texture has content, use the label color
         if (inBorder && texColor.a > 0.1) {
           gl_FragColor = vColor;
         } else {
-          gl_FragColor = texColor;
+          // If the point should be desaturated (grayscale vColor with low alpha)
+          if (isGrayscale && vColor.a < 0.5) {
+            // Convert to grayscale using luminance
+            float gray = dot(texColor.rgb, vec3(0.299, 0.587, 0.114));
+            gl_FragColor = vec4(gray, gray, gray, texColor.a * vColor.a);
+          } else {
+            // Normal colored sprite
+            gl_FragColor = texColor;
+          }
         }
       } else {
         bool inside = point_in_unit_circle(gl_PointCoord);
