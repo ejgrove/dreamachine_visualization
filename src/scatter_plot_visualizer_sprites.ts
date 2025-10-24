@@ -144,7 +144,7 @@ const FRAGMENT_SHADER = `
         // Check if vColor is grayscale (desaturated) by checking if RGB components are similar
         float colorDiff = abs(vColor.r - vColor.g) + abs(vColor.g - vColor.b) + abs(vColor.b - vColor.r);
         bool isGrayscale = colorDiff < 0.1;
-        
+
         // If in border and texture has content, use the label color
         if (inBorder && texColor.a > 0.1) {
           gl_FragColor = vColor;

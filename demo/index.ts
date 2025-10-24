@@ -126,6 +126,50 @@ const drawSprite = (pointIndex: number) => {
 };
 
 let selectedPointIndex: number | null = null;
+let selectedLabelIndex: number | null = null;
+
+// Function to update button active states
+const updateClusterButtons = () => {
+  document.querySelectorAll('.cluster-button').forEach(button => {
+    const buttonLabelIndex = parseInt(button.getAttribute('data-label-index')!);
+    if (selectedLabelIndex === buttonLabelIndex) {
+      button.classList.add('active');
+    } else {
+      button.classList.remove('active');
+    }
+  });
+};
+
+// Function to handle cluster selection
+const selectCluster = (labelIndex: number | null) => {
+  if (selectedLabelIndex === labelIndex) {
+    // Clicking the same cluster - deselect
+    selectedLabelIndex = null;
+    selectedPointIndex = null;
+  } else {
+    // Select this cluster
+    selectedLabelIndex = labelIndex;
+    // Find first point with this label to set selectedPointIndex
+    if (labelIndex !== null) {
+      for (let i = 0; i < currentDataset.metadata!.length; i++) {
+        if (currentDataset.metadata![i]['labelIndex'] === labelIndex) {
+          selectedPointIndex = i;
+          break;
+        }
+      }
+    } else {
+      selectedPointIndex = null;
+    }
+  }
+
+  updateClusterButtons();
+
+  // Trigger color update
+  const labelColorInput = document.querySelector<HTMLInputElement>('input[name="color"][value="label"]');
+  if (labelColorInput && labelColorInput.checked) {
+    labelColorInput.dispatchEvent(new Event('change'));
+  }
+};
 
 const scatterGL = new ScatterGL(containerElement, {
   onHover: (point: number | null) => {
@@ -134,15 +178,11 @@ const scatterGL = new ScatterGL(containerElement, {
   onClick: (point: number | null) => {
     if (point === null) {
       // Click on empty space - deselect
-      selectedPointIndex = null;
+      selectCluster(null);
     } else {
-      // Click on a point - select it
-      selectedPointIndex = point;
-    }
-    // Trigger color update
-    const labelColorInput = document.querySelector<HTMLInputElement>('input[name="color"][value="label"]');
-    if (labelColorInput && labelColorInput.checked) {
-      labelColorInput.dispatchEvent(new Event('change'));
+      // Click on a point - select its cluster
+      const labelIndex = currentDataset.metadata![point]['labelIndex'] as number;
+      selectCluster(labelIndex);
     }
   },
   renderMode: RenderMode.POINT,
@@ -153,6 +193,38 @@ const scatterGL = new ScatterGL(containerElement, {
   },
 });
 scatterGL.render(currentDataset);
+
+// Create cluster buttons
+const createClusterButtons = () => {
+  const clusterButtonsContainer = document.getElementById('cluster-buttons')!;
+  clusterButtonsContainer.innerHTML = '';
+
+  // Get unique label indices
+  const uniqueLabels = new Set<number>();
+  currentDataset.metadata!.forEach(meta => {
+    uniqueLabels.add(meta['labelIndex'] as number);
+  });
+
+  // Sort labels
+  const sortedLabels = Array.from(uniqueLabels).sort((a, b) => a - b);
+
+  // Create button for each cluster
+  sortedLabels.forEach(labelIndex => {
+    const labelName = data.labelNames[labelIndex] || 'Unknown';
+    const button = document.createElement('button');
+    button.className = 'cluster-button';
+    button.setAttribute('data-label-index', labelIndex.toString());
+    button.innerHTML = `<span class="label-index">${labelIndex}:</span>${labelName}`;
+
+    button.addEventListener('click', () => {
+      selectCluster(labelIndex);
+    });
+
+    clusterButtonsContainer.appendChild(button);
+  });
+};
+
+createClusterButtons();
 
 // Add in a resize observer for automatic window resize.
 window.addEventListener('resize', () => {
@@ -206,15 +278,15 @@ document
       if (inputElement.value === 'default') {
         scatterGL.setPointColorer(null);
         selectedPointIndex = null; // Reset selection when switching to default
+        selectedLabelIndex = null;
+        updateClusterButtons();
       } else if (inputElement.value === 'label') {
         scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
           const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
 
-          // If a point is selected, dim other clusters
-          if (selectedPointIndex !== null) {
-            const selectedLabelIndex = currentDataset.metadata![selectedPointIndex]['labelIndex'] as number;
-
-            // If it's the same label as the selected point, keep normal color
+          // If a cluster is selected, dim other clusters
+          if (selectedLabelIndex !== null) {
+            // If it's the same label as the selected cluster, keep normal color
             if (labelIndex === selectedLabelIndex) {
               return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
             }
@@ -238,6 +310,14 @@ showNoiseToggle.addEventListener('change', () => {
   showNoise = showNoiseToggle.checked;
   currentDataset = showNoise ? dataset : filteredDataset;
   scatterGL.render(currentDataset);
+
+  // Recreate cluster buttons for the new dataset
+  createClusterButtons();
+
+  // Reset selection
+  selectedPointIndex = null;
+  selectedLabelIndex = null;
+  updateClusterButtons();
 
   // Re-apply current render mode
   if (renderMode === 'sprites') {
