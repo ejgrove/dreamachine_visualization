@@ -25,10 +25,12 @@ const dataPoints: Point3D[] = [];
 const metadata: PointMetadata[] = [];
 data.projection.forEach((vector, index) => {
   const labelIndex = data.labels[index];
+  const labelName = data.labelNames[labelIndex];
   dataPoints.push(vector);
   metadata.push({
     labelIndex,
-    label: data.labelNames[labelIndex],
+    label: labelName,
+    description: `${labelIndex}: ${labelName}`,
   });
 });
 
@@ -68,33 +70,66 @@ let showNoise = true;
 let currentDataset = dataset;
 
 const containerElement = document.getElementById('container')!;
-const messagesElement = document.getElementById('messages')!;
+const hoverInfoElement = document.getElementById('hover-info')!;
+const hoverLabelElement = hoverInfoElement.querySelector('.label')!;
+const hoverDescriptionElement = hoverInfoElement.querySelector('.description')!;
+const hoverCanvasElement = hoverInfoElement.querySelector('.sprite-image') as HTMLCanvasElement;
 
-const setMessage = (message: string) => {
-  const messageStr = `🔥 ${message}`;
-  console.log(messageStr);
-  messagesElement.innerHTML = messageStr;
+// Load the sprite sheet
+const spriteSheet = new Image();
+spriteSheet.src = 'sprite.png';
+
+const updateHoverInfo = (pointIndex: number | null) => {
+  if (pointIndex === null) {
+    hoverInfoElement.classList.add('empty');
+    hoverLabelElement.textContent = '';
+    hoverDescriptionElement.textContent = '';
+  } else {
+    const point = currentDataset.metadata![pointIndex];
+    const label = point.label || 'Unknown';
+    const description = String(point.description || 'No description available');
+
+    hoverInfoElement.classList.remove('empty');
+    hoverLabelElement.textContent = String(label);
+    hoverDescriptionElement.textContent = description;
+
+    // Draw the sprite on the canvas
+    if (spriteSheet.complete) {
+      drawSprite(pointIndex);
+    } else {
+      spriteSheet.onload = () => drawSprite(pointIndex);
+    }
+  }
+};
+
+const drawSprite = (pointIndex: number) => {
+  const ctx = hoverCanvasElement.getContext('2d')!;
+  const spriteSize = 50; // Original sprite size in the sheet
+  const displaySize = 150; // Display size in the canvas
+
+  // Determine which sprite to use
+  let spriteIndex = pointIndex;
+  if (currentDataset.spriteMetadata?.spriteIndices) {
+    spriteIndex = currentDataset.spriteMetadata.spriteIndices[pointIndex];
+  }
+
+  // Calculate sprite position in the sprite sheet
+  const spritesPerRow = Math.floor(spriteSheet.width / spriteSize);
+  const spriteX = (spriteIndex % spritesPerRow) * spriteSize;
+  const spriteY = Math.floor(spriteIndex / spritesPerRow) * spriteSize;
+
+  // Clear canvas and draw sprite at larger size
+  ctx.clearRect(0, 0, displaySize, displaySize);
+  ctx.drawImage(
+    spriteSheet,
+    spriteX, spriteY, spriteSize, spriteSize,
+    0, 0, displaySize, displaySize
+  );
 };
 
 const scatterGL = new ScatterGL(containerElement, {
-  onClick: (point: number | null) => {
-    setMessage(`click ${point}`);
-  },
   onHover: (point: number | null) => {
-    setMessage(`hover ${point}`);
-  },
-  onSelect: (points: number[]) => {
-    let message = '';
-    if (points.length === 0 && lastSelectedPoints.length === 0) {
-      message = 'no selection';
-    } else if (points.length === 0 && lastSelectedPoints.length > 0) {
-      message = 'deselected';
-    } else if (points.length === 1) {
-      message = `selected ${points}`;
-    } else {
-      message = `selected ${points.length} points`;
-    }
-    setMessage(message);
+    updateHoverInfo(point);
   },
   renderMode: RenderMode.POINT,
   selectEnabled: false,
