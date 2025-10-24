@@ -152,17 +152,6 @@ limitations under the License.
       <hr />
       <div class="render-modes control">
         <h5>Render</h5>
-        <label class="mdl-radio mdl-js-radio" for="point-render">
-          <input
-            type="radio"
-            class="mdl-radio__button"
-            id="point-render"
-            name="render"
-            value="points"
-            checked
-          />
-          <span class="mdl-radio__label">Points</span>
-        </label>
         <label class="mdl-radio mdl-js-radio" for="sprite-render">
           <input
             type="radio"
@@ -170,32 +159,32 @@ limitations under the License.
             id="sprite-render"
             name="render"
             value="sprites"
+            checked
           />
           <span class="mdl-radio__label">Sprites</span>
         </label>
-      </div>
-      <div class="color control">
-        <h5>Color by</h5>
-        <label class="mdl-radio mdl-js-radio" for="color-default">
+        <label class="mdl-radio mdl-js-radio" for="point-render">
           <input
             type="radio"
             class="mdl-radio__button"
-            id="color-default"
-            name="color"
-            value="default"
+            id="point-render"
+            name="render"
+            value="points"
+          />
+          <span class="mdl-radio__label">Points</span>
+        </label>
+      </div>
+      <hr />
+      <div class="cluster-toggle control">
+        <label class="mdl-switch mdl-js-switch" for="show-clusters">
+          <input
+            type="checkbox"
+            id="show-clusters"
+            class="mdl-switch__input"
+            name="showClusters"
             checked
           />
-          <span class="mdl-radio__label">Default</span>
-        </label>
-        <label class="mdl-radio mdl-js-radio" for="color-label">
-          <input
-            type="radio"
-            class="mdl-radio__button"
-            id="color-label"
-            name="color"
-            value="label"
-          />
-          <span class="mdl-radio__label">Label</span>
+          <span class="mdl-switch__label">Show Clusters</span>
         </label>
       </div>
       <hr />

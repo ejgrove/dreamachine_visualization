@@ -63,7 +63,7 @@ filteredDataset.setSpriteMetadata({
 });
 
 let lastSelectedPoints: number[] = [];
-let renderMode = 'points';
+let renderMode = 'sprites';
 let showNoise = true;
 let currentDataset = dataset;
 
@@ -185,7 +185,7 @@ const scatterGL = new ScatterGL(containerElement, {
       selectCluster(labelIndex);
     }
   },
-  renderMode: RenderMode.POINT,
+  renderMode: RenderMode.SPRITE,
   selectEnabled: false,
   showLabelsOnHover: false,
   orbitControls: {
@@ -271,36 +271,58 @@ function colorByLabelIndex(i: number): string {
   return LABEL_PALETTE[idx % LABEL_PALETTE.length];
 }
 
-document
-  .querySelectorAll<HTMLInputElement>('input[name="color"]')
-  .forEach(inputElement => {
-    inputElement.addEventListener('change', () => {
-      if (inputElement.value === 'default') {
-        scatterGL.setPointColorer(null);
-        selectedPointIndex = null; // Reset selection when switching to default
-        selectedLabelIndex = null;
-        updateClusterButtons();
-      } else if (inputElement.value === 'label') {
-        scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
-          const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
+// Show Clusters toggle
+const showClustersToggle = document.querySelector<HTMLInputElement>(
+  'input[name="showClusters"]'
+)!;
 
-          // If a cluster is selected, dim other clusters
-          if (selectedLabelIndex !== null) {
-            // If it's the same label as the selected cluster, keep normal color
-            if (labelIndex === selectedLabelIndex) {
-              return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
-            }
+// Initialize with clusters shown (toggle is on by default)
+scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
+  const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
 
-            // Otherwise, return a desaturated, low-opacity grayscale
-            return 'rgba(200, 200, 200, 0.3)';
-          }
+  // If a cluster is selected, dim other clusters
+  if (selectedLabelIndex !== null) {
+    // If it's the same label as the selected cluster, keep normal color
+    if (labelIndex === selectedLabelIndex) {
+      return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+    }
 
-          // No selection - use normal colors from LABEL_PALETTE
+    // Otherwise, return a desaturated, low-opacity grayscale
+    return 'rgba(200, 200, 200, 0.3)';
+  }
+
+  // No selection - use normal colors from LABEL_PALETTE
+  return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+});
+
+showClustersToggle.addEventListener('change', () => {
+  if (showClustersToggle.checked) {
+    // Show clusters with label colors
+    scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
+      const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
+
+      // If a cluster is selected, dim other clusters
+      if (selectedLabelIndex !== null) {
+        // If it's the same label as the selected cluster, keep normal color
+        if (labelIndex === selectedLabelIndex) {
           return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
-        });
+        }
+
+        // Otherwise, return a desaturated, low-opacity grayscale
+        return 'rgba(200, 200, 200, 0.3)';
       }
+
+      // No selection - use normal colors from LABEL_PALETTE
+      return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
     });
-  });
+  } else {
+    // Hide clusters - use default coloring
+    scatterGL.setPointColorer(null);
+    selectedPointIndex = null; // Reset selection when switching to default
+    selectedLabelIndex = null;
+    updateClusterButtons();
+  }
+});
 
 // Show Noise toggle
 const showNoiseToggle = document.querySelector<HTMLInputElement>(
@@ -326,11 +348,23 @@ showNoiseToggle.addEventListener('change', () => {
     scatterGL.setPointRenderMode();
   }
 
-  // Re-apply current coloring if label coloring is active
-  const labelColorInput = document.querySelector<HTMLInputElement>('input[name="color"][value="label"]');
-  if (labelColorInput && labelColorInput.checked) {
+  // Re-apply current coloring if cluster coloring is active
+  if (showClustersToggle.checked) {
     scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
       const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
+
+      // If a cluster is selected, dim other clusters
+      if (selectedLabelIndex !== null) {
+        // If it's the same label as the selected cluster, keep normal color
+        if (labelIndex === selectedLabelIndex) {
+          return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+        }
+
+        // Otherwise, return a desaturated, low-opacity grayscale
+        return 'rgba(200, 200, 200, 0.3)';
+      }
+
+      // No selection - use normal colors from LABEL_PALETTE
       return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
     });
   }
