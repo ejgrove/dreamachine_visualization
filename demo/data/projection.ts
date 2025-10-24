@@ -25,14 +25,15 @@ export interface Data {
   labels: number[];
   labelNames: string[];
   projection: [number, number][];
+  centroids: [number, number][];
 }
 
 // Transform the imported data to match our interface
-// dm_data.json has 'label' instead of 'labels'
 const transformedData: Data = {
   labels: dmDataRaw.label,
   labelNames: dmDataRaw.labelNames,
-  projection: dmDataRaw.projection.map((point: [number, number, number]) => [point[0], point[1]])
+  projection: dmDataRaw.projection.map((point: [number, number, number]) => [point[0], point[1]]),
+  centroids: dmDataRaw.centroids.map((centroid: [number, number, number]) => [centroid[0], centroid[1]])
 };
 
 

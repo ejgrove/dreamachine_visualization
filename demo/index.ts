@@ -53,9 +53,7 @@ const filteredDataset = new Dataset(filteredDataPoints, filteredMetadata);
 
 dataset.setSpriteMetadata({
   spriteImage: 'sprite.png',
-  singleSpriteSize: [50, 50],
-  // Uncomment the following line to only use the first sprite for every point
-  // spriteIndices: dataPoints.map(d => 0),
+  singleSpriteSize: [50,50],
 });
 
 filteredDataset.setSpriteMetadata({
@@ -133,6 +131,7 @@ const scatterGL = new ScatterGL(containerElement, {
   },
   renderMode: RenderMode.POINT,
   selectEnabled: false,
+  showLabelsOnHover: false,
   orbitControls: {
     zoomSpeed: 1.15,
   },
