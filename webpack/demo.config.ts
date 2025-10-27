@@ -46,7 +46,7 @@ module.exports = {
     extensions: ['.ts', '.js', '.json'],
   },
   entry: {
-    demo: './demo/index.ts',
+    demo: './visualization/index.ts',
   },
   output: {
     path: path.join(__dirname, '../demo_build'),
@@ -54,8 +54,8 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, '../demo/index.html'),
+      template: path.join(__dirname, '../visualization/index.html'),
     }),
-    new CopyWebpackPlugin([{from: 'demo/static'}]),
+    new CopyWebpackPlugin([{from: 'visualization/static'}]),
   ],
 };

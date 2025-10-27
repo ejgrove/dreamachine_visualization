@@ -19,7 +19,7 @@
     "build-lib-min": "MINIMIZE=true webpack --config ./webpack/lib.config.ts",
     "build-demo": "rm -rf demo_build && webpack --config ./webpack/demo.config.ts",
     "demo": "webpack-dev-server --config ./webpack/demo.config.ts",
-    "deploy-demo": "npm run build-demo && node demo/deploy.js",
+    "deploy-demo": "npm run build-demo && node deploy.js",
     "test": "jest"
   },
   "devDependencies": {
