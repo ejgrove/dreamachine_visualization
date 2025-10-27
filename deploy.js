@@ -19,7 +19,8 @@ const ghPages = require('gh-pages');
 
 ghPages.publish('demo_build', {
   branch: 'gh-pages',
-  repo: 'https://github.com/ejgrove/dreamachine_visualization.git'
+  repo: 'https://github.com/ejgrove/dreamachine_visualization.git',
+  add: true
 }, (err) => {
   if (err) {
     console.error('❌ Error publishing to github pages:', err);
