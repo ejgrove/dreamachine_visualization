@@ -17,6 +17,14 @@ limitations under the License.
 
 const ghPages = require('gh-pages');
 
-ghPages.publish('demo_build', () => {
-  console.log('🚀 published to github pages!');
+ghPages.publish('demo_build', {
+  branch: 'gh-pages',
+  repo: 'https://github.com/ejgrove/dreamachine_visualization.git'
+}, (err) => {
+  if (err) {
+    console.error('❌ Error publishing to github pages:', err);
+    process.exit(1);
+  } else {
+    console.log('🚀 published to github pages!');
+  }
 });
