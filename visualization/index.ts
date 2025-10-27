@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {data} from './data/projection';
+import {data} from './static/projection';
 import {Point3D, Dataset, PointMetadata} from '../src/data';
 import {makeSequences} from './sequences';
 import {ScatterGL, RenderMode} from '../src';

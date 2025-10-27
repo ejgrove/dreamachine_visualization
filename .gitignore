@@ -5,5 +5,4 @@ lib/
 demo_build/
 
 # Large sprite files
-**/sprite.png
 **/sprite_150.png
