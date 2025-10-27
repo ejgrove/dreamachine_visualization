@@ -13,13 +13,13 @@
   "unpkg": "lib/scatter-gl.min.js",
   "jsdelivr": "lib/scatter-gl.min.js",
   "scripts": {
-    "build": "yarn build-dist && yarn build-lib && yarn build-lib-min",
+    "build": "npm run build-dist && npm run build-lib && npm run build-lib-min",
     "build-dist": "rm -rf dist && tsc",
     "build-lib": "webpack --config ./webpack/lib.config.ts",
     "build-lib-min": "MINIMIZE=true webpack --config ./webpack/lib.config.ts",
     "build-demo": "rm -rf demo_build && webpack --config ./webpack/demo.config.ts",
     "demo": "webpack-dev-server --config ./webpack/demo.config.ts",
-    "deploy-demo": "yarn build-demo && node demo/deploy.js",
+    "deploy-demo": "npm run build-demo && node demo/deploy.js",
     "test": "jest"
   },
   "devDependencies": {
