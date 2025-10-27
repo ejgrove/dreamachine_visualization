@@ -164,10 +164,29 @@ const selectCluster = (labelIndex: number | null) => {
 
   updateClusterButtons();
 
-  // Trigger color update
-  const labelColorInput = document.querySelector<HTMLInputElement>('input[name="color"][value="label"]');
-  if (labelColorInput && labelColorInput.checked) {
-    labelColorInput.dispatchEvent(new Event('change'));
+  // Force re-render by re-applying the point colorer if clusters are shown
+  const showClustersToggle = document.querySelector<HTMLInputElement>(
+    'input[name="showClusters"]'
+  )!;
+
+  if (showClustersToggle && showClustersToggle.checked) {
+    scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
+      const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
+
+      // If a cluster is selected, dim other clusters
+      if (selectedLabelIndex !== null) {
+        // If it's the same label as the selected cluster, keep normal color
+        if (labelIndex === selectedLabelIndex) {
+          return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+        }
+
+        // Otherwise, return a desaturated, low-opacity grayscale
+        return 'rgba(200, 200, 200, 0.3)';
+      }
+
+      // No selection - use normal colors from LABEL_PALETTE
+      return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+    });
   }
 };
 
