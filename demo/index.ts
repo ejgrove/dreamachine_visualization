@@ -73,9 +73,9 @@ const hoverLabelElement = hoverInfoElement.querySelector('.label')!;
 const hoverDescriptionElement = hoverInfoElement.querySelector('.description')!;
 const hoverCanvasElement = hoverInfoElement.querySelector('.sprite-image') as HTMLCanvasElement;
 
-// Load the sprite sheet for hover display (150x150 sprites)
+// Load the sprite sheet for hover display
 const spriteSheet = new Image();
-spriteSheet.src = 'sprite_150.png';
+spriteSheet.src = 'sprite.png';
 
 const updateHoverInfo = (pointIndex: number | null) => {
   if (pointIndex === null) {
@@ -102,7 +102,7 @@ const updateHoverInfo = (pointIndex: number | null) => {
 
 const drawSprite = (pointIndex: number) => {
   const ctx = hoverCanvasElement.getContext('2d')!;
-  const spriteSize = 150; // Original sprite size in the sheet (150x150)
+  const spriteSize = 50; // Original sprite size in the sheet
   const displaySize = 150; // Display size in the canvas
 
   // Determine which sprite to use
@@ -116,7 +116,7 @@ const drawSprite = (pointIndex: number) => {
   const spriteX = (spriteIndex % spritesPerRow) * spriteSize;
   const spriteY = Math.floor(spriteIndex / spritesPerRow) * spriteSize;
 
-  // Clear canvas and draw sprite
+  // Clear canvas and draw sprite scaled up to display size
   ctx.clearRect(0, 0, displaySize, displaySize);
   ctx.drawImage(
     spriteSheet,
