@@ -73,9 +73,9 @@ const hoverLabelElement = hoverInfoElement.querySelector('.label')!;
 const hoverDescriptionElement = hoverInfoElement.querySelector('.description')!;
 const hoverCanvasElement = hoverInfoElement.querySelector('.sprite-image') as HTMLCanvasElement;
 
-// Load the sprite sheet
+// Load the sprite sheet for hover display (150x150 sprites)
 const spriteSheet = new Image();
-spriteSheet.src = 'sprite.png';
+spriteSheet.src = 'sprite_150.png';
 
 const updateHoverInfo = (pointIndex: number | null) => {
   if (pointIndex === null) {
@@ -102,7 +102,7 @@ const updateHoverInfo = (pointIndex: number | null) => {
 
 const drawSprite = (pointIndex: number) => {
   const ctx = hoverCanvasElement.getContext('2d')!;
-  const spriteSize = 50; // Original sprite size in the sheet
+  const spriteSize = 150; // Original sprite size in the sheet (150x150)
   const displaySize = 150; // Display size in the canvas
 
   // Determine which sprite to use
@@ -116,7 +116,7 @@ const drawSprite = (pointIndex: number) => {
   const spriteX = (spriteIndex % spritesPerRow) * spriteSize;
   const spriteY = Math.floor(spriteIndex / spritesPerRow) * spriteSize;
 
-  // Clear canvas and draw sprite at larger size
+  // Clear canvas and draw sprite
   ctx.clearRect(0, 0, displaySize, displaySize);
   ctx.drawImage(
     spriteSheet,
@@ -242,7 +242,7 @@ document
         scatterGL.setSpriteRenderMode();
         // Re-render the dataset to ensure sprites are displayed
         scatterGL.render(currentDataset);
-        
+
         // Re-apply cluster coloring if enabled
         const showClustersToggle = document.querySelector<HTMLInputElement>(
           'input[name="showClusters"]'
