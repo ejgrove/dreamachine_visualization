@@ -134,7 +134,7 @@ const FRAGMENT_SHADER = `
         vec4 texColor = texture(spriteTexture, coords);
 
         // Calculate square border (border thickness: adjust borderWidth)
-        float borderWidth = 0.03; // Thickness of the border
+        float borderWidth = 0.05; // Thickness of the border
         vec2 coord = gl_PointCoord;
 
         // Check if we're in the border region (edge of the square sprite)

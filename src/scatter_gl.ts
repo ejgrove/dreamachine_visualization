@@ -347,7 +347,11 @@ export class ScatterGL {
     const positions = new Float32Array(dataset.points.length * 3);
     let dst = 0;
 
-    const Z_OFFSET_HOVER = 0.01; // Small offset to bring hovered/selected to front
+  // z-offsets used to bring points to the front. Hover should be higher
+  // so that a hovered point always appears on top even when clusters are
+  // highlighted/moved forward.
+  const Z_OFFSET_HIGHLIGHT = 0.01; // offset for selected/highlighted cluster points
+  const Z_OFFSET_HOVER = 0.02; // larger offset for hovered point to stay above highlights
 
     dataset.points.forEach((d, i) => {
       const vector = dataset.points[i];
@@ -360,9 +364,12 @@ export class ScatterGL {
         zPos = util.scaleLinear(vector[2]!, zExtent, zScale);
       }
 
-      // Bring hovered or selected points to the front
-      if (i === this.hoverPointIndex || this.selectedPointIndices.has(i) || this.highlightedPointIndices.has(i)) {
+      // Bring hovered or selected/highlighted points to the front. Hover gets
+      // a slightly larger z-offset so it renders above highlighted clusters.
+      if (i === this.hoverPointIndex) {
         zPos += Z_OFFSET_HOVER;
+      } else if (this.selectedPointIndices.has(i) || this.highlightedPointIndices.has(i)) {
+        zPos += Z_OFFSET_HIGHLIGHT;
       }
 
       positions[dst++] = zPos;
