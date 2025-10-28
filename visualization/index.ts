@@ -21,6 +21,24 @@ import {makeSequences} from './sequences';
 import {ScatterGL, RenderMode} from '../src';
 /** SAFEHTML */
 
+// Loading bar functionality
+const loadingOverlay = document.getElementById('loading-overlay')!;
+const loadingBar = document.getElementById('loading-bar')!;
+
+function updateLoadingProgress(progress: number) {
+  loadingBar.style.width = `${progress}%`;
+}
+
+function hideLoadingScreen() {
+  loadingOverlay.classList.add('hidden');
+  setTimeout(() => {
+    loadingOverlay.style.display = 'none';
+  }, 300); // Wait for fade out transition
+}
+
+// Simulate loading progress
+updateLoadingProgress(30); // Initial data loaded
+
 const dataPoints: Point3D[] = [];
 const metadata: PointMetadata[] = [];
 data.projection.forEach((vector, index) => {
@@ -37,6 +55,8 @@ data.projection.forEach((vector, index) => {
 const sequences = makeSequences(dataPoints, metadata);
 const dataset = new Dataset(dataPoints, metadata);
 
+updateLoadingProgress(50); // Dataset created
+
 // Create filtered dataset without noise (label -1)
 const filteredDataPoints: Point3D[] = [];
 const filteredMetadata: PointMetadata[] = [];
@@ -51,6 +71,8 @@ dataPoints.forEach((point, index) => {
 });
 const filteredDataset = new Dataset(filteredDataPoints, filteredMetadata);
 
+updateLoadingProgress(60); // Filtered dataset created
+
 dataset.setSpriteMetadata({
   spriteImage: 'sprite.png',
   singleSpriteSize: [50,50],
@@ -61,6 +83,8 @@ filteredDataset.setSpriteMetadata({
   singleSpriteSize: [50, 50],
   spriteIndices: filteredSpriteIndices,
 });
+
+updateLoadingProgress(70); // Sprite metadata configured
 
 let lastSelectedPoints: number[] = [];
 let renderMode = 'sprites';
@@ -201,6 +225,26 @@ const selectCluster = (labelIndex: number | null) => {
   }
 };
 
+// Label-based palette for the demo (index 0 is gray)
+const LABEL_PALETTE: string[] = [
+  '#dbdbdb', // label 0
+  '#b20014',
+  '#8a3dff',
+  '#008a00',
+  '#eba600',
+  '#ff7dd2',
+  '#00baf7',
+  '#04ff35',
+  '#a60082',
+  '#0071c6',
+  '#ff7561',
+  '#db00ff',
+  '#00f7be',
+  '#8eb61c',
+  '#fb0079',
+  '#be6100',
+];
+
 const scatterGL = new ScatterGL(containerElement, {
   onHover: (point: number | null) => {
     updateHoverInfo(point);
@@ -222,7 +266,12 @@ const scatterGL = new ScatterGL(containerElement, {
     zoomSpeed: 1.15,
   },
 });
+
+updateLoadingProgress(80); // ScatterGL initialized
+
 scatterGL.render(currentDataset);
+
+updateLoadingProgress(90); // Initial render complete
 
 // Create cluster buttons
 const createClusterButtons = () => {
@@ -241,10 +290,14 @@ const createClusterButtons = () => {
   // Create button for each cluster
   sortedLabels.forEach(labelIndex => {
     const labelName = data.labelNames[labelIndex] || 'Unknown';
+    const labelColor = LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+
     const button = document.createElement('button');
     button.className = 'cluster-button';
     button.setAttribute('data-label-index', labelIndex.toString());
     button.innerHTML = `<span class="label-index">${labelIndex}:</span>${labelName}`;
+    button.style.borderColor = labelColor;
+    button.style.borderWidth = '3px';
 
     button.addEventListener('click', () => {
       selectCluster(labelIndex);
@@ -255,6 +308,19 @@ const createClusterButtons = () => {
 };
 
 createClusterButtons();
+
+updateLoadingProgress(95); // UI initialized
+
+// Wait for sprite sheet to load before hiding loading screen
+if (spriteSheet.complete) {
+  updateLoadingProgress(100);
+  hideLoadingScreen();
+} else {
+  spriteSheet.addEventListener('load', () => {
+    updateLoadingProgress(100);
+    hideLoadingScreen();
+  });
+}
 
 // Add in a resize observer for automatic window resize.
 window.addEventListener('resize', () => {
@@ -301,26 +367,6 @@ document
       }
     });
   });
-
-  // Label-based palette for the demo (index 0 is gray)
-const LABEL_PALETTE: string[] = [
-  '#dbdbdb', // label 0
-  '#b20014',
-  '#8a3dff',
-  '#008a00',
-  '#eba600',
-  '#ff7dd2',
-  '#00baf7',
-  '#04ff35',
-  '#a60082',
-  '#0071c6',
-  '#ff7561',
-  '#db00ff',
-  '#00f7be',
-  '#8eb61c',
-  '#fb0079',
-  '#be6100',
-];
 
 function colorByLabelIndex(i: number): string {
   const idx = data.labels[i] ?? 0;
