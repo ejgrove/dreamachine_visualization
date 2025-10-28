@@ -44,11 +44,15 @@ const metadata: PointMetadata[] = [];
 data.projection.forEach((vector, index) => {
   const labelIndex = data.labels[index];
   const labelName = data.labelNames[labelIndex];
+  const category = data.categories[labelIndex];
+  const quantity = data.quantities[labelIndex];
   dataPoints.push(vector);
   metadata.push({
     labelIndex,
     label: labelName,
     description: `${labelIndex}: ${labelName}`,
+    category,
+    quantity,
   });
 });
 
@@ -109,7 +113,10 @@ const updateHoverInfo = (pointIndex: number | null) => {
   } else {
     const point = currentDataset.metadata![pointIndex];
     const label = point.label || 'Unknown';
-    const description = String(point.description || 'No description available');
+    const category = (point as any).category || 'N/A';
+    const rawQuantity = (point as any).quantity || 'N/A';
+    const quantity = rawQuantity !== 'N/A' ? parseInt(rawQuantity) : 'N/A';
+    const description = `${category}  N=${quantity}`;
 
     hoverInfoElement.classList.remove('empty');
     hoverLabelElement.textContent = String(label);
