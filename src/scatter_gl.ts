@@ -81,6 +81,7 @@ export class ScatterGL {
 
   private hoverPointIndex: number | null = null;
   private selectedPointIndices = new Set<number>();
+  private highlightedPointIndices = new Set<number>(); // For cluster highlighting
 
   private clickCallback: (point: number | null) => void = () => {};
   private hoverCallback: (point: number | null) => void = () => {};
@@ -240,6 +241,13 @@ export class ScatterGL {
     this.renderScatterPlot();
   };
 
+  highlightPoints = (pointIndices: number[]) => {
+    this.highlightedPointIndices = new Set(pointIndices);
+    this.updateScatterPlotPositions(); // Update positions to bring to front
+    this.updateScatterPlotAttributes();
+    this.renderScatterPlot();
+  };
+
   private onSelect = (pointIndices: number[]) => {
     if (!this.selectEnabled) return;
     this.selectCallback(pointIndices);
@@ -353,7 +361,7 @@ export class ScatterGL {
       }
 
       // Bring hovered or selected points to the front
-      if (i === this.hoverPointIndex || this.selectedPointIndices.has(i)) {
+      if (i === this.hoverPointIndex || this.selectedPointIndices.has(i) || this.highlightedPointIndices.has(i)) {
         zPos += Z_OFFSET_HOVER;
       }
 

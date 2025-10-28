@@ -49,7 +49,7 @@ const CTRL_KEY = 'Control';
 
 const START_CAMERA_POS_3D = new THREE.Vector3(0.45, 0.9, 1.6);
 const START_CAMERA_TARGET_3D = new THREE.Vector3(0, 0, 0);
-const START_CAMERA_POS_2D = new THREE.Vector3(0, 0, 4);
+const START_CAMERA_POS_2D = new THREE.Vector3(0, 0, 8);
 const START_CAMERA_TARGET_2D = new THREE.Vector3(0, 0, 0);
 
 export interface OrbitControlParams {

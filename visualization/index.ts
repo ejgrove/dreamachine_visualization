@@ -151,15 +151,26 @@ const selectCluster = (labelIndex: number | null) => {
     selectedLabelIndex = labelIndex;
     // Find first point with this label to set selectedPointIndex
     if (labelIndex !== null) {
+      // Collect all points with this label
+      const clusterPointIndices: number[] = [];
       for (let i = 0; i < currentDataset.metadata!.length; i++) {
         if (currentDataset.metadata![i]['labelIndex'] === labelIndex) {
-          selectedPointIndex = i;
-          break;
+          if (clusterPointIndices.length === 0) {
+            selectedPointIndex = i; // Set first point as selected
+          }
+          clusterPointIndices.push(i);
         }
       }
+      // Bring all points in this cluster to the front
+      scatterGL.highlightPoints(clusterPointIndices);
     } else {
       selectedPointIndex = null;
     }
+  }
+
+  // If deselecting, clear highlight
+  if (selectedLabelIndex === null) {
+    scatterGL.highlightPoints([]);
   }
 
   updateClusterButtons();
