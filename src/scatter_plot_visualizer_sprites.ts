@@ -73,12 +73,12 @@ const makeVertexShader = (minPointSize: number) => `
         fogDepth = pointSize / outputPointSize * 1.2;
       } else {  // Create size attenuation (if we're in 2D mode)
         const float PI = 3.1415926535897932384626433832795;
-        const float minScale = 0.1;  // minimum scaling factor
-        const float outSpeed = 2.0;  // shrink speed when zooming out
+        const float minScale = 0.005;  // minimum scaling factor - controls minimum sprite size (0.01 = 1% of original size when fully zoomed out)
+        const float outSpeed = 1.0;  // shrink speed when zooming out
         const float outNorm = (1. - minScale) / atan(outSpeed);
-        const float maxScale = 15.0;  // maximum scaling factor
-        const float inSpeed = 0.02;  // enlarge speed when zooming in
-        const float zoomOffset = 0.3;  // offset zoom pivot
+        const float maxScale = 10.0;  // maximum scaling factor
+        const float inSpeed = 0.05;  // enlarge speed when zooming in
+        const float zoomOffset = 0.05;  // offset zoom pivot
         float zoom = projectionMatrix[0][0] + zoomOffset;  // zoom pivot
         float scale = zoom < 1. ? 1. + outNorm * atan(outSpeed * (zoom - 1.)) :
                       1. + 2. / PI * (maxScale - 1.) * atan(inSpeed * (zoom - 1.));

@@ -341,7 +341,12 @@ scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
 });
 
 showClustersToggle.addEventListener('change', () => {
+  const clusterPanel = document.getElementById('cluster-panel')!;
+
   if (showClustersToggle.checked) {
+    // Show cluster panel
+    clusterPanel.style.display = 'block';
+
     // Show clusters with label colors
     scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
       const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
@@ -361,6 +366,9 @@ showClustersToggle.addEventListener('change', () => {
       return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
     });
   } else {
+    // Hide cluster panel
+    clusterPanel.style.display = 'none';
+
     // Hide clusters - use default coloring
     scatterGL.setPointColorer(null);
     selectedPointIndex = null; // Reset selection when switching to default

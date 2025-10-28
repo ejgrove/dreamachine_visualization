@@ -172,6 +172,33 @@ limitations under the License.
         </label>
       </div>
       <hr />
+      <div class="spread-control control">
+        <label for="spread-slider">Spread: <span id="spread-value">1.0</span></label>
+        <input
+          type="range"
+          id="spread-slider"
+          name="spread"
+          min="0.1"
+          max="3.0"
+          step="0.1"
+          value="1.0"
+          style="width: 100%;"
+        />
+      </div>
+      <div class="sprite-size-control control">
+        <label for="sprite-size-slider">Sprite Size: <span id="sprite-size-value">50</span></label>
+        <input
+          type="range"
+          id="sprite-size-slider"
+          name="spriteSize"
+          min="10"
+          max="100"
+          step="5"
+          value="50"
+          style="width: 100%;"
+        />
+      </div>
+      <hr />
       <div class="cluster-toggle control">
         <label class="mdl-switch mdl-js-switch" for="show-clusters">
           <input
