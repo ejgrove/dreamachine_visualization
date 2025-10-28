@@ -31,6 +31,7 @@ limitations under the License.
       body {
         font-family: Helvetica, sans-serif;
         margin: 0;
+        touch-action: none; /* Prevent default touch behaviors */
       }
 
       #container {
@@ -48,6 +49,7 @@ limitations under the License.
         height: 100vh;
         overflow-y: auto;
         box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        z-index: 1000;
       }
 
       #cluster-panel {
@@ -60,6 +62,84 @@ limitations under the License.
         height: 100vh;
         overflow-y: auto;
         box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+        z-index: 1000;
+      }
+
+      /* Mobile styles */
+      @media (max-width: 768px) {
+        #controls {
+          width: 100%;
+          height: auto;
+          max-height: 40vh;
+          bottom: 0;
+          top: auto;
+          left: 0;
+          box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+          padding: 15px;
+        }
+
+        #cluster-panel {
+          width: 100%;
+          height: auto;
+          max-height: 60vh;
+          top: 0;
+          right: 0;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+          padding: 15px;
+        }
+
+        #cluster-panel h5 {
+          font-size: 16px;
+        }
+
+        .cluster-button {
+          padding: 8px;
+          font-size: 12px;
+          margin-bottom: 8px;
+          min-height: 44px; /* Touch-friendly minimum */
+        }
+
+        #hover-info {
+          padding: 10px;
+          margin-top: 10px;
+        }
+
+        #hover-info .label {
+          font-size: 12px;
+        }
+
+        #hover-info .description {
+          font-size: 11px;
+        }
+
+        /* Make radio buttons and switches easier to tap */
+        .mdl-radio,
+        .mdl-switch {
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      /* Very small mobile devices */
+      @media (max-width: 480px) {
+        #controls {
+          padding: 10px;
+        }
+
+        #cluster-panel {
+          padding: 10px;
+        }
+
+        #cluster-panel h5 {
+          font-size: 14px;
+          margin-bottom: 10px;
+        }
+
+        .cluster-button {
+          padding: 6px;
+          font-size: 11px;
+        }
       }
 
       #cluster-panel h5 {
@@ -72,24 +152,27 @@ limitations under the License.
         width: 100%;
         padding: 4px;
         margin-bottom: 6px;
-        border: 2px solid #ddd;
+        border: 3px solid #ddd;
         border-radius: 4px;
         background-color: white;
         cursor: pointer;
         text-align: left;
         font-size: 10px;
         transition: all 0.2s;
+        opacity: 1;
       }
 
       .cluster-button:hover {
-        background-color: #f5f5f5;
-        border-color: #999;
+        background-color: #e5e5e5;
+        opacity: 0.6;
       }
 
       .cluster-button.active {
-        border-color: #333;
-        background-color: #e3f2fd;
+        background-color: #e5e5e5;
         font-weight: bold;
+        opacity: 1.0;
+        border-width: 5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
       }
 
       .cluster-button .label-index {
