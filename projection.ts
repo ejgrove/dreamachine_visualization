@@ -24,16 +24,18 @@ console.log('Type of import:', typeof dmDataRaw);
 export interface Data {
   labels: number[];
   labelNames: string[];
+  categories: string[];
+  quantities: string[];
   projection: [number, number][];
-  centroids: [number, number][];
 }
 
 // Transform the imported data to match our interface
 const transformedData: Data = {
   labels: dmDataRaw.label,
   labelNames: dmDataRaw.labelNames,
+  categories: dmDataRaw.categories,
+  quantities: dmDataRaw.quantity,  // Note: field is named 'quantity' in JSON
   projection: dmDataRaw.projection.map((point: [number, number, number]) => [point[0], point[1]]),
-  centroids: dmDataRaw.centroids.map((centroid: [number, number, number]) => [centroid[0], centroid[1]])
 };
 
 
