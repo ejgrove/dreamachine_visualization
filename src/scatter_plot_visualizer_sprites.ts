@@ -292,7 +292,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
       isImage: {type: 'bool'},
       sizeAttenuation: {type: 'bool'},
       pointSize: {type: 'f'},
-      borderWidth: {type: 'f', value: 0.02}, // Border width when clusters not selected
+      borderWidth: {type: 'f', value: 0.05}, // Border width when clusters not selected
       borderWidthClustered: {type: 'f', value: 0.05}, // Border width when clusters selected
       useLargeBorder: {type: 'bool', value: false}, // Toggle between border widths
     };

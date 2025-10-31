@@ -158,6 +158,8 @@ const drawSprite = (pointIndex: number) => {
 
 let selectedPointIndex: number | null = null;
 let selectedLabelIndex: number | null = null;
+let hoveredLabelIndex: number | null = null; // Track hovered cluster from buttons
+let hoverTimeoutId: number | null = null; // Track timeout for delayed hover clear
 
 // Function to update button active states
 const updateClusterButtons = () => {
@@ -171,15 +173,104 @@ const updateClusterButtons = () => {
   });
 };
 
+// Function to handle cluster hover (temporary highlight without selection)
+const hoverCluster = (labelIndex: number | null, immediate: boolean = false) => {
+  // Clear any pending timeout
+  if (hoverTimeoutId !== null) {
+    clearTimeout(hoverTimeoutId);
+    hoverTimeoutId = null;
+  }
+
+  // If clearing hover and not immediate, delay it
+  if (labelIndex === null && !immediate) {
+    hoverTimeoutId = window.setTimeout(() => {
+      hoverTimeoutId = null;
+      applyHoverCluster(null);
+    }, 200); // 0.3 second delay
+    return;
+  }
+
+  // Apply immediately
+  applyHoverCluster(labelIndex);
+};
+
+// Function that actually applies the hover cluster highlighting
+const applyHoverCluster = (labelIndex: number | null) => {
+  hoveredLabelIndex = labelIndex;
+
+  // Apply the same highlighting as selection, but don't change selectedLabelIndex
+  if (labelIndex !== null) {
+    // Collect all points with this label
+    const clusterPointIndices: number[] = [];
+    for (let i = 0; i < currentDataset.metadata!.length; i++) {
+      if (currentDataset.metadata![i]['labelIndex'] === labelIndex) {
+        clusterPointIndices.push(i);
+      }
+    }
+    // Bring all points in this cluster to the front
+    scatterGL.highlightPoints(clusterPointIndices);
+  } else {
+    // Clear hover - restore to selected state or clear
+    if (selectedLabelIndex !== null) {
+      // Restore selection highlight
+      const clusterPointIndices: number[] = [];
+      for (let i = 0; i < currentDataset.metadata!.length; i++) {
+        if (currentDataset.metadata![i]['labelIndex'] === selectedLabelIndex) {
+          clusterPointIndices.push(i);
+        }
+      }
+      scatterGL.highlightPoints(clusterPointIndices);
+    } else {
+      scatterGL.highlightPoints([]);
+    }
+  }
+
+  // Force re-render with updated coloring
+  const showClustersToggle = document.querySelector<HTMLInputElement>(
+    'input[name="showClusters"]'
+  )!;
+
+  if (showClustersToggle && showClustersToggle.checked) {
+    scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
+      const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
+
+      // Use hovered cluster if hovering, otherwise use selected cluster
+      const activeCluster = hoveredLabelIndex !== null ? hoveredLabelIndex : selectedLabelIndex;
+
+      // If a cluster is active (hovered or selected), dim other clusters
+      if (activeCluster !== null) {
+        // If it's the same label as the active cluster, keep normal color
+        if (labelIndex === activeCluster) {
+          return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+        }
+
+        // Otherwise, return a desaturated, low-opacity grayscale
+        return 'rgba(200, 200, 200, 0.3)';
+      }
+
+      // No selection - use normal colors from LABEL_PALETTE
+      return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
+    });
+  }
+};
+
 // Function to handle cluster selection
 const selectCluster = (labelIndex: number | null) => {
+  // Clear any pending hover timeout
+  if (hoverTimeoutId !== null) {
+    clearTimeout(hoverTimeoutId);
+    hoverTimeoutId = null;
+  }
+
   if (selectedLabelIndex === labelIndex) {
     // Clicking the same cluster - deselect
     selectedLabelIndex = null;
     selectedPointIndex = null;
+    hoveredLabelIndex = null; // Clear hover when deselecting
   } else {
     // Select this cluster
     selectedLabelIndex = labelIndex;
+    hoveredLabelIndex = null; // Clear hover when selecting
     // Find first point with this label to set selectedPointIndex
     if (labelIndex !== null) {
       // Collect all points with this label
@@ -215,10 +306,13 @@ const selectCluster = (labelIndex: number | null) => {
     scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
       const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
 
-      // If a cluster is selected, dim other clusters
-      if (selectedLabelIndex !== null) {
-        // If it's the same label as the selected cluster, keep normal color
-        if (labelIndex === selectedLabelIndex) {
+      // Use hovered cluster if hovering, otherwise use selected cluster
+      const activeCluster = hoveredLabelIndex !== null ? hoveredLabelIndex : selectedLabelIndex;
+
+      // If a cluster is active (hovered or selected), dim other clusters
+      if (activeCluster !== null) {
+        // If it's the same label as the active cluster, keep normal color
+        if (labelIndex === activeCluster) {
           return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
         }
 
@@ -308,6 +402,21 @@ const createClusterButtons = () => {
 
     button.addEventListener('click', () => {
       selectCluster(labelIndex);
+    });
+
+    // Add hover listeners for temporary highlighting
+    button.addEventListener('mouseenter', () => {
+      // Only apply hover effect if this cluster is not already selected
+      if (selectedLabelIndex !== labelIndex) {
+        hoverCluster(labelIndex);
+      }
+    });
+
+    button.addEventListener('mouseleave', () => {
+      // Clear hover effect, restore to selected state if any
+      if (selectedLabelIndex !== labelIndex) {
+        hoverCluster(null);
+      }
     });
 
     clusterButtonsContainer.appendChild(button);
