@@ -118,6 +118,9 @@ const FRAGMENT_SHADER = `
     uniform float spritesPerRow;
     uniform float spritesPerColumn;
     uniform bool isImage;
+    uniform float borderWidth;
+    uniform float borderWidthClustered;
+    uniform bool useLargeBorder;
 
     ${THREE.ShaderChunk['common']}
     ${FRAGMENT_SHADER_POINT_TEST_CHUNK}
@@ -128,25 +131,38 @@ const FRAGMENT_SHADER = `
 
     void main() {
       if (isImage) {
-        // Coordinates of the vertex within the entire sprite image.
-        vec2 coords =
-          (gl_PointCoord + xyIndex) / vec2(spritesPerRow, spritesPerColumn);
-        vec4 texColor = texture(spriteTexture, coords);
+        // Select border width based on cluster selection state
+        float activeBorderWidth = useLargeBorder ? borderWidthClustered : borderWidth;
 
-        // Calculate square border (border thickness: adjust borderWidth)
-        float borderWidth = 0.05; // Thickness of the border
+        // Coordinates within the point sprite (0.0 to 1.0)
         vec2 coord = gl_PointCoord;
 
-        // Check if we're in the border region (edge of the square sprite)
-        bool inBorder = (coord.x < borderWidth || coord.x > (1.0 - borderWidth) ||
-                        coord.y < borderWidth || coord.y > (1.0 - borderWidth));
+        // Check if we're in the border region (outside the inner sprite area)
+        // The border extends outward from the sprite perimeter
+        bool inBorder = (coord.x < activeBorderWidth || coord.x > (1.0 - activeBorderWidth) ||
+                        coord.y < activeBorderWidth || coord.y > (1.0 - activeBorderWidth));
+
+        // Map coordinates for texture sampling - scale to use only the inner area
+        // This keeps the sprite content within the inner region, leaving the border area empty
+        vec2 scaledCoord = (coord - activeBorderWidth) / (1.0 - 2.0 * activeBorderWidth);
+
+        // Check if we're within the valid texture coordinate range
+        bool validTexCoord = scaledCoord.x >= 0.0 && scaledCoord.x <= 1.0 &&
+                            scaledCoord.y >= 0.0 && scaledCoord.y <= 1.0;
+
+        vec4 texColor = vec4(0.0);
+        if (validTexCoord) {
+          // Coordinates of the vertex within the entire sprite image
+          vec2 coords = (scaledCoord + xyIndex) / vec2(spritesPerRow, spritesPerColumn);
+          texColor = texture(spriteTexture, coords);
+        }
 
         // Check if vColor is grayscale (desaturated) by checking if RGB components are similar
         float colorDiff = abs(vColor.r - vColor.g) + abs(vColor.g - vColor.b) + abs(vColor.b - vColor.r);
         bool isGrayscale = colorDiff < 0.1;
 
-        // If in border and texture has content, use the label color
-        if (inBorder && texColor.a > 0.1) {
+        // Draw the border with the label color
+        if (inBorder && (!validTexCoord || texColor.a > 0.1)) {
           gl_FragColor = vColor;
         } else {
           // If the point should be desaturated (grayscale vColor with low alpha)
@@ -236,6 +252,35 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     this.pickingMaterial = this.createPickingMaterial();
   }
 
+  /**
+   * Set whether to use large borders (when clusters are selected)
+   * @param useLarge - true to use borderWidthClustered, false to use borderWidth
+   */
+  public setLargeBorderMode(useLarge: boolean) {
+    if (this.renderMaterial && this.renderMaterial.uniforms) {
+      this.renderMaterial.uniforms.useLargeBorder.value = useLarge;
+    }
+    if (this.pickingMaterial && this.pickingMaterial.uniforms) {
+      this.pickingMaterial.uniforms.useLargeBorder.value = useLarge;
+    }
+  }
+
+  /**
+   * Set the border widths
+   * @param normalWidth - border width when clusters not selected (0.0 to 0.5)
+   * @param clusteredWidth - border width when clusters are selected (0.0 to 0.5)
+   */
+  public setBorderWidths(normalWidth: number, clusteredWidth: number) {
+    if (this.renderMaterial && this.renderMaterial.uniforms) {
+      this.renderMaterial.uniforms.borderWidth.value = normalWidth;
+      this.renderMaterial.uniforms.borderWidthClustered.value = clusteredWidth;
+    }
+    if (this.pickingMaterial && this.pickingMaterial.uniforms) {
+      this.pickingMaterial.uniforms.borderWidth.value = normalWidth;
+      this.pickingMaterial.uniforms.borderWidthClustered.value = clusteredWidth;
+    }
+  }
+
   private createUniforms(): any {
     return {
       spriteTexture: {type: 't'},
@@ -247,6 +292,9 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
       isImage: {type: 'bool'},
       sizeAttenuation: {type: 'bool'},
       pointSize: {type: 'f'},
+      borderWidth: {type: 'f', value: 0.02}, // Border width when clusters not selected
+      borderWidthClustered: {type: 'f', value: 0.05}, // Border width when clusters selected
+      useLargeBorder: {type: 'bool', value: false}, // Toggle between border widths
     };
   }
 

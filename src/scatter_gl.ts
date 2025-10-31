@@ -243,6 +243,16 @@ export class ScatterGL {
 
   highlightPoints = (pointIndices: number[]) => {
     this.highlightedPointIndices = new Set(pointIndices);
+
+    // Toggle large border mode based on whether points are highlighted
+    const useLargeBorder = pointIndices.length > 0;
+    if (this.spritesheetVisualizer) {
+      this.spritesheetVisualizer.setLargeBorderMode(useLargeBorder);
+    }
+    if (this.pointVisualizer) {
+      this.pointVisualizer.setLargeBorderMode(useLargeBorder);
+    }
+
     this.updateScatterPlotPositions(); // Update positions to bring to front
     this.updateScatterPlotAttributes();
     this.renderScatterPlot();
