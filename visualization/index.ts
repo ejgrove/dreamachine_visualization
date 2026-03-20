@@ -96,69 +96,192 @@ let showNoise = true;
 let currentDataset = dataset;
 
 const containerElement = document.getElementById('container')!;
-const hoverInfoElement = document.getElementById('hover-info')!;
-const hoverLabelElement = hoverInfoElement.querySelector('.label')!;
-const hoverDescriptionElement = hoverInfoElement.querySelector('.description')!;
-const hoverCanvasElement = hoverInfoElement.querySelector('.sprite-image') as HTMLCanvasElement;
+const controlsElement = document.getElementById('controls')!;
+const controlsToggleElement = document.getElementById('controls-toggle') as HTMLButtonElement;
+const controlsCloseElement = document.getElementById('controls-close') as HTMLButtonElement;
+const aboutToggleElement = document.getElementById('about-trigger') as HTMLButtonElement;
+const aboutPanelElement = document.getElementById('about-panel')!;
+const aboutCloseElement = document.getElementById('about-close') as HTMLButtonElement;
+const hoverCardElement = document.getElementById('hover-card')!;
+const hoverLabelElement = hoverCardElement.querySelector('.label')!;
+const hoverDescriptionElement = hoverCardElement.querySelector('.description')!;
+const hoverCanvasElement = hoverCardElement.querySelector('.sprite-image') as HTMLCanvasElement;
+const SMALL_SPRITE_SIZE = 50;
+const SMALL_DISPLAY_SIZE = 180;
+const HOVER_CARD_OFFSET = 20;
+const PANEL_STACK_GAP = 10;
+const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
+const prefersCoarsePointer = () => coarsePointerQuery.matches;
 
-// Load the sprite sheet for hover display
 const spriteSheet = new Image();
 spriteSheet.src = 'sprite.png';
 
+let hoveredPointIndex: number | null = null;
+let hoverPointerX = window.innerWidth / 2;
+let hoverPointerY = window.innerHeight / 2;
+
+const getSpriteIndex = (pointIndex: number) => {
+  if (currentDataset.spriteMetadata?.spriteIndices) {
+    return currentDataset.spriteMetadata.spriteIndices[pointIndex];
+  }
+  return pointIndex;
+};
+
+const positionHoverCard = () => {
+  if (!hoverCardElement.classList.contains('visible')) {
+    return;
+  }
+
+  if (prefersCoarsePointer()) {
+    const x = Math.max(12, (window.innerWidth - hoverCardElement.offsetWidth) / 2);
+    const y = Math.max(
+      12,
+      window.innerHeight - hoverCardElement.offsetHeight - 12 - Math.min(window.innerHeight * 0.46, 280)
+    );
+    hoverCardElement.style.left = `${x}px`;
+    hoverCardElement.style.top = `${y}px`;
+    return;
+  }
+
+  const maxLeft = window.innerWidth - hoverCardElement.offsetWidth - 12;
+  const maxTop = window.innerHeight - hoverCardElement.offsetHeight - 12;
+  const x = Math.min(Math.max(12, hoverPointerX + HOVER_CARD_OFFSET), maxLeft);
+  const y = Math.min(Math.max(12, hoverPointerY + HOVER_CARD_OFFSET), maxTop);
+
+  hoverCardElement.style.left = `${x}px`;
+  hoverCardElement.style.top = `${y}px`;
+};
+
+const showHoverCard = () => {
+  hoverCardElement.classList.add('visible');
+  hoverCardElement.setAttribute('aria-hidden', 'false');
+  positionHoverCard();
+};
+
+const hideHoverCard = () => {
+  hoverCardElement.classList.remove('visible');
+  hoverCardElement.setAttribute('aria-hidden', 'true');
+};
+
 const updateHoverInfo = (pointIndex: number | null) => {
+  hoveredPointIndex = pointIndex;
+
   if (pointIndex === null) {
-    hoverInfoElement.classList.add('empty');
+    hideHoverCard();
     hoverLabelElement.textContent = '';
     hoverDescriptionElement.textContent = '';
+    const ctx = hoverCanvasElement.getContext('2d')!;
+    ctx.clearRect(0, 0, hoverCanvasElement.width, hoverCanvasElement.height);
   } else {
     const point = currentDataset.metadata![pointIndex];
     const label = point.label || 'Unknown';
-    const category = (point as any).category || 'N/A';
     const rawQuantity = (point as any).quantity || 'N/A';
     const quantity = rawQuantity !== 'N/A' ? parseInt(rawQuantity) : 'N/A';
-    const description = `${category}  N=${quantity}`;
+    const description = `N=${quantity}`;
 
-    hoverInfoElement.classList.remove('empty');
     hoverLabelElement.textContent = String(label);
     hoverDescriptionElement.textContent = description;
+    showHoverCard();
 
-    // Draw the sprite on the canvas
     if (spriteSheet.complete) {
-      drawSprite(pointIndex);
+      drawSprite(pointIndex, spriteSheet, SMALL_SPRITE_SIZE, SMALL_DISPLAY_SIZE);
     } else {
-      spriteSheet.onload = () => drawSprite(pointIndex);
+      spriteSheet.onload = () =>
+        hoveredPointIndex === pointIndex &&
+        drawSprite(pointIndex, spriteSheet, SMALL_SPRITE_SIZE, SMALL_DISPLAY_SIZE);
     }
   }
 };
 
-const drawSprite = (pointIndex: number) => {
+const drawSprite = (
+  pointIndex: number,
+  activeSpriteSheet: HTMLImageElement,
+  spriteSize: number,
+  displaySize: number
+) => {
   const ctx = hoverCanvasElement.getContext('2d')!;
-  const spriteSize = 50; // Original sprite size in the sheet
-  const displaySize = 150; // Display size in the canvas
+  hoverCanvasElement.width = displaySize;
+  hoverCanvasElement.height = displaySize;
+  ctx.imageSmoothingEnabled = true;
 
-  // Determine which sprite to use
-  let spriteIndex = pointIndex;
-  if (currentDataset.spriteMetadata?.spriteIndices) {
-    spriteIndex = currentDataset.spriteMetadata.spriteIndices[pointIndex];
-  }
-
-  // Calculate sprite position in the sprite sheet
-  const spritesPerRow = Math.floor(spriteSheet.width / spriteSize);
+  const spriteIndex = getSpriteIndex(pointIndex);
+  const spritesPerRow = Math.floor(activeSpriteSheet.width / spriteSize);
   const spriteX = (spriteIndex % spritesPerRow) * spriteSize;
   const spriteY = Math.floor(spriteIndex / spritesPerRow) * spriteSize;
 
-  // Clear canvas and draw sprite scaled up to display size
   ctx.clearRect(0, 0, displaySize, displaySize);
   ctx.drawImage(
-    spriteSheet,
+    activeSpriteSheet,
     spriteX, spriteY, spriteSize, spriteSize,
     0, 0, displaySize, displaySize
   );
+  positionHoverCard();
 };
+
+const syncPanelLayout = () => {
+  const controlsOpen = controlsElement.classList.contains('open');
+  aboutPanelElement.classList.toggle('shifted', controlsOpen);
+
+  const controlsLeft = window.innerWidth <= 768 ? 14 : 18;
+  const controlsTop = window.innerWidth <= 768 ? 62 : 70;
+  const aboutTop = window.innerWidth <= 768 ? 62 : 70;
+  controlsElement.style.top = `${controlsTop}px`;
+  controlsElement.style.left = `${controlsLeft}px`;
+  aboutPanelElement.style.left = `${controlsLeft}px`;
+
+  if (controlsOpen) {
+    const controlsRect = controlsElement.getBoundingClientRect();
+    aboutPanelElement.style.top = `${controlsRect.bottom + PANEL_STACK_GAP}px`;
+  } else {
+    aboutPanelElement.style.top = `${aboutTop}px`;
+  }
+};
+
+const setControlsOpen = (isOpen: boolean) => {
+  controlsElement.classList.toggle('open', isOpen);
+  controlsElement.setAttribute('aria-hidden', String(!isOpen));
+  controlsToggleElement.setAttribute('aria-expanded', String(isOpen));
+  syncPanelLayout();
+};
+
+const setAboutOpen = (isOpen: boolean) => {
+  aboutPanelElement.classList.toggle('open', isOpen);
+  aboutToggleElement.setAttribute('aria-expanded', String(isOpen));
+  syncPanelLayout();
+};
+
+controlsToggleElement.addEventListener('click', () => {
+  setControlsOpen(!controlsElement.classList.contains('open'));
+});
+
+controlsCloseElement.addEventListener('click', () => {
+  setControlsOpen(false);
+});
+
+aboutToggleElement.addEventListener('click', () => {
+  setAboutOpen(!aboutPanelElement.classList.contains('open'));
+});
+
+aboutCloseElement.addEventListener('click', () => {
+  setAboutOpen(false);
+});
+
+syncPanelLayout();
+
+containerElement.addEventListener('pointermove', event => {
+  hoverPointerX = event.clientX;
+  hoverPointerY = event.clientY;
+  positionHoverCard();
+});
+
+window.addEventListener('resize', () => {
+  positionHoverCard();
+});
 
 let selectedPointIndex: number | null = null;
 let selectedLabelIndex: number | null = null;
 let hoveredLabelIndex: number | null = null; // Track hovered cluster from buttons
+let sidebarHoveredLabelIndex: number | null = null; // Track hovered cluster from plot hover
 let hoverTimeoutId: number | null = null; // Track timeout for delayed hover clear
 
 // Function to update button active states
@@ -169,6 +292,15 @@ const updateClusterButtons = () => {
       button.classList.add('active');
     } else {
       button.classList.remove('active');
+    }
+
+    if (
+      selectedLabelIndex !== buttonLabelIndex &&
+      sidebarHoveredLabelIndex === buttonLabelIndex
+    ) {
+      button.classList.add('hovered');
+    } else {
+      button.classList.remove('hovered');
     }
   });
 };
@@ -348,9 +480,23 @@ const LABEL_PALETTE: string[] = [
 
 const scatterGL = new ScatterGL(containerElement, {
   onHover: (point: number | null) => {
+    if (prefersCoarsePointer()) {
+      return;
+    }
+
     updateHoverInfo(point);
+    sidebarHoveredLabelIndex =
+      point === null ? null : (currentDataset.metadata![point]['labelIndex'] as number);
+    updateClusterButtons();
   },
   onClick: (point: number | null) => {
+    if (prefersCoarsePointer()) {
+      updateHoverInfo(point);
+      sidebarHoveredLabelIndex =
+        point === null ? null : (currentDataset.metadata![point]['labelIndex'] as number);
+      updateClusterButtons();
+    }
+
     if (point === null) {
       // Click on empty space - deselect
       selectCluster(null);
@@ -404,20 +550,20 @@ const createClusterButtons = () => {
       selectCluster(labelIndex);
     });
 
-    // Add hover listeners for temporary highlighting
-    button.addEventListener('mouseenter', () => {
-      // Only apply hover effect if this cluster is not already selected
-      if (selectedLabelIndex !== labelIndex) {
-        hoverCluster(labelIndex);
-      }
-    });
+    if (!prefersCoarsePointer()) {
+      // Add hover listeners for temporary highlighting on desktop pointers only.
+      button.addEventListener('mouseenter', () => {
+        if (selectedLabelIndex !== labelIndex) {
+          hoverCluster(labelIndex);
+        }
+      });
 
-    button.addEventListener('mouseleave', () => {
-      // Clear hover effect, restore to selected state if any
-      if (selectedLabelIndex !== labelIndex) {
-        hoverCluster(null);
-      }
-    });
+      button.addEventListener('mouseleave', () => {
+        if (selectedLabelIndex !== labelIndex) {
+          hoverCluster(null);
+        }
+      });
+    }
 
     clusterButtonsContainer.appendChild(button);
   });
@@ -441,6 +587,7 @@ if (spriteSheet.complete) {
 // Add in a resize observer for automatic window resize.
 window.addEventListener('resize', () => {
   scatterGL.resize();
+  syncPanelLayout();
 });
 
 document
@@ -557,6 +704,8 @@ const showNoiseToggle = document.querySelector<HTMLInputElement>(
 showNoiseToggle.addEventListener('change', () => {
   showNoise = showNoiseToggle.checked;
   currentDataset = showNoise ? dataset : filteredDataset;
+  hoveredPointIndex = null;
+  hideHoverCard();
   scatterGL.render(currentDataset);
 
   // Recreate cluster buttons for the new dataset
@@ -565,6 +714,7 @@ showNoiseToggle.addEventListener('change', () => {
   // Reset selection
   selectedPointIndex = null;
   selectedLabelIndex = null;
+  sidebarHoveredLabelIndex = null;
   updateClusterButtons();
 
   // Re-apply current render mode

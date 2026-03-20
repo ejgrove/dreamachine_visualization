@@ -15,10 +15,10 @@
   "scripts": {
     "build": "npm run build-dist && npm run build-lib && npm run build-lib-min",
     "build-dist": "rm -rf dist && tsc",
-    "build-lib": "webpack --config ./webpack/lib.config.ts",
-    "build-lib-min": "MINIMIZE=true webpack --config ./webpack/lib.config.ts",
-    "build-demo": "rm -rf demo_build && webpack --config ./webpack/demo.config.ts",
-    "demo": "webpack-dev-server --config ./webpack/demo.config.ts",
+    "build-lib": "NODE_OPTIONS=--openssl-legacy-provider webpack --config ./webpack/lib.config.ts",
+    "build-lib-min": "NODE_OPTIONS=--openssl-legacy-provider MINIMIZE=true webpack --config ./webpack/lib.config.ts",
+    "build-demo": "rm -rf demo_build && NODE_OPTIONS=--openssl-legacy-provider webpack --config ./webpack/demo.config.ts",
+    "demo": "NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config ./webpack/demo.config.ts",
     "deploy-demo": "npm run build-demo && node deploy.js",
     "test": "jest"
   },
