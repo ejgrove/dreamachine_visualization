@@ -147,6 +147,7 @@ limitations under the License.
         box-shadow: 0 16px 34px rgba(76, 61, 33, 0.08);
         z-index: 1190;
         display: none;
+        box-sizing: border-box;
       }
 
       #controls.open {
@@ -225,6 +226,7 @@ limitations under the License.
         border-radius: 18px;
         box-shadow: 0 16px 34px rgba(76, 61, 33, 0.08);
         z-index: 1190;
+        box-sizing: border-box;
       }
 
       .about-panel.open {
@@ -303,6 +305,7 @@ limitations under the License.
         box-shadow: -14px 0 30px rgba(69, 55, 34, 0.08);
         border-radius: 20px;
         z-index: 1000;
+        box-sizing: border-box;
       }
 
       @media (max-width: 1100px) {
@@ -544,7 +547,7 @@ limitations under the License.
         }
 
         #cluster-panel {
-          width: 100%;
+          width: auto;
           height: auto;
           max-height: min(54vh, 360px);
           top: auto;
@@ -636,6 +639,7 @@ limitations under the License.
           left: 0;
           right: 0;
           bottom: 0;
+          width: auto;
           max-height: min(58vh, 380px);
           padding: 12px;
         }
