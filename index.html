@@ -104,31 +104,6 @@ limitations under the License.
         pointer-events: none;
       }
 
-      #clusters-trigger {
-        display: none;
-        position: fixed;
-        right: 14px;
-        bottom: 14px;
-        z-index: 1200;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border: 0;
-        border-radius: 999px;
-        background: rgba(248, 243, 236, 0.96);
-        box-shadow: 0 10px 24px rgba(66, 50, 29, 0.12);
-        color: #534231;
-        cursor: pointer;
-        backdrop-filter: blur(14px);
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.01em;
-      }
-
-      #clusters-trigger.visible {
-        display: inline-flex;
-      }
-
       #controls {
         position: fixed;
         top: 70px;
@@ -147,7 +122,6 @@ limitations under the License.
         box-shadow: 0 16px 34px rgba(76, 61, 33, 0.08);
         z-index: 1190;
         display: none;
-        box-sizing: border-box;
       }
 
       #controls.open {
@@ -226,7 +200,6 @@ limitations under the License.
         border-radius: 18px;
         box-shadow: 0 16px 34px rgba(76, 61, 33, 0.08);
         z-index: 1190;
-        box-sizing: border-box;
       }
 
       .about-panel.open {
@@ -305,7 +278,6 @@ limitations under the License.
         box-shadow: -14px 0 30px rgba(69, 55, 34, 0.08);
         border-radius: 20px;
         z-index: 1000;
-        box-sizing: border-box;
       }
 
       @media (max-width: 1100px) {
@@ -335,27 +307,6 @@ limitations under the License.
         font-weight: 700;
         letter-spacing: 0.02em;
         text-transform: uppercase;
-      }
-
-      .cluster-panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .cluster-close {
-        display: none;
-        border: 0;
-        background: rgba(122, 101, 72, 0.08);
-        color: #6a5741;
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        flex: 0 0 auto;
       }
 
       .cluster-help {
@@ -547,7 +498,7 @@ limitations under the License.
         }
 
         #cluster-panel {
-          width: auto;
+          width: 100%;
           height: auto;
           max-height: min(54vh, 360px);
           top: auto;
@@ -562,10 +513,6 @@ limitations under the License.
 
         #cluster-panel h5 {
           font-size: 16px;
-        }
-
-        .cluster-close {
-          display: inline-flex;
         }
 
         .cluster-button {
@@ -583,7 +530,8 @@ limitations under the License.
         }
 
         #hover-card {
-          display: none !important;
+          width: min(74vw, 240px);
+          max-width: 240px;
         }
 
         .about-panel {
@@ -604,8 +552,7 @@ limitations under the License.
 
       @media (max-width: 480px) {
         #controls-toggle,
-        #about-trigger,
-        #clusters-trigger {
+        #about-trigger {
           top: 12px;
           padding: 10px 12px;
           min-height: 44px;
@@ -621,12 +568,6 @@ limitations under the License.
           right: 12px;
         }
 
-        #clusters-trigger {
-          top: auto;
-          right: 12px;
-          bottom: 12px;
-        }
-
         #controls {
           padding: 12px;
           top: 60px;
@@ -639,7 +580,6 @@ limitations under the License.
           left: 0;
           right: 0;
           bottom: 0;
-          width: auto;
           max-height: min(58vh, 380px);
           padding: 12px;
         }
@@ -655,7 +595,8 @@ limitations under the License.
         }
 
         #hover-card {
-          display: none !important;
+          width: min(78vw, 220px);
+          max-width: 220px;
         }
 
         .about-panel {
@@ -686,10 +627,6 @@ limitations under the License.
     <button id="about-trigger" type="button" aria-expanded="false" aria-controls="about-panel">
       <span class="material-icons">info</span>
       <span>About</span>
-    </button>
-    <button id="clusters-trigger" type="button" aria-expanded="false" aria-controls="cluster-panel">
-      <span class="material-icons">apps</span>
-      <span>Clusters</span>
     </button>
 
     <aside id="controls" aria-hidden="true">
@@ -794,14 +731,9 @@ limitations under the License.
     </div>
 
     <div id="cluster-panel">
-      <div class="cluster-panel-header">
-        <h5>Clusters</h5>
-        <button class="cluster-close" id="cluster-close" type="button" aria-label="Close clusters panel">
-          <span class="material-icons">close</span>
-        </button>
-      </div>
+      <h5>Clusters</h5>
       <div class="cluster-help">Select a cluster or click on a drawing</div>
       <div id="cluster-buttons"></div>
     </div>
-  <script type="text/javascript" src="demo.aa0128e60534d1aad570.js"></script></body>
+  <script type="text/javascript" src="bundle.min.js"></script></body>
 </html>
