@@ -263,6 +263,23 @@ limitations under the License.
         font-size: 11px;
       }
 
+      .corner-credit {
+        position: fixed;
+        left: 18px;
+        bottom: 18px;
+        max-width: min(420px, calc(100vw - 180px));
+        padding: 10px 14px;
+        background: rgba(247, 242, 234, 0.94);
+        border: 1px solid rgba(118, 95, 62, 0.12);
+        border-radius: 14px;
+        box-shadow: 0 10px 24px rgba(52, 41, 24, 0.08);
+        color: #5d4a36;
+        font-size: 11px;
+        line-height: 1.45;
+        z-index: 980;
+        backdrop-filter: blur(12px);
+      }
+
       #cluster-panel {
         position: fixed;
         top: 18px;
@@ -548,6 +565,15 @@ limitations under the License.
           width: 80vw;
           max-width: 300px;
         }
+
+        .corner-credit {
+          left: 14px;
+          right: 14px;
+          bottom: 14px;
+          max-width: none;
+          padding: 10px 12px;
+          font-size: 10px;
+        }
       }
 
       @media (max-width: 480px) {
@@ -604,6 +630,12 @@ limitations under the License.
           left: 12px;
           right: 12px;
           width: auto;
+        }
+
+        .corner-credit {
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
         }
       }
     </style>
@@ -717,9 +749,28 @@ limitations under the License.
         </a>
         - Grove et al., 2026.
       </p>
-      <p class="license-note">
-        Code is derived from ScatterGL demo - Apache-2.0 license.
+      <p>
+        This visualisation uses Dreamachine participant drawings (2022),
+        courtesy of Collective Act. Dreamachine
+        (<a href="https://dreamachine.world" target="_blank" rel="noopener noreferrer">https://dreamachine.world</a>)
+        was produced by Collective Act and presented as part of UNBOXED:
+        Creativity in the UK.
       </p>
+      <p>
+        The images remain the copyright of Collective Act and are used here
+        with permission for research visualisation. The drawing images may
+        not be reproduced separately from this visualisation without the
+        permission of Collective Act.
+      </p>
+      <p class="license-note">
+        The visualisation code is derived from the ScatterGL demo, licensed
+        under the Apache 2.0 Licence.
+      </p>
+    </div>
+
+    <div class="corner-credit">
+      Dreamachine participant drawings (2022), courtesy of Collective Act.
+      Images © Collective Act. Used with permission.
     </div>
 
     <div id="hover-card" aria-hidden="true">

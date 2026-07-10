@@ -114,7 +114,8 @@ const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
 const prefersCoarsePointer = () => coarsePointerQuery.matches;
 
 const spriteSheet = new Image();
-spriteSheet.src = 'sprite.png';
+spriteSheet.decoding = 'async';
+let hoverSpriteSheetRequested = false;
 
 let hoveredPointIndex: number | null = null;
 let hoverPointerX = window.innerWidth / 2;
@@ -163,6 +164,13 @@ const hideHoverCard = () => {
   hoverCardElement.setAttribute('aria-hidden', 'true');
 };
 
+const ensureHoverSpriteSheet = () => {
+  if (!hoverSpriteSheetRequested) {
+    hoverSpriteSheetRequested = true;
+    spriteSheet.src = 'sprite.png';
+  }
+};
+
 const updateHoverInfo = (pointIndex: number | null) => {
   hoveredPointIndex = pointIndex;
 
@@ -183,12 +191,20 @@ const updateHoverInfo = (pointIndex: number | null) => {
     hoverDescriptionElement.textContent = description;
     showHoverCard();
 
-    if (spriteSheet.complete) {
+    ensureHoverSpriteSheet();
+
+    if (spriteSheet.complete && spriteSheet.naturalWidth > 0) {
       drawSprite(pointIndex, spriteSheet, SMALL_SPRITE_SIZE, SMALL_DISPLAY_SIZE);
     } else {
-      spriteSheet.onload = () =>
-        hoveredPointIndex === pointIndex &&
-        drawSprite(pointIndex, spriteSheet, SMALL_SPRITE_SIZE, SMALL_DISPLAY_SIZE);
+      spriteSheet.addEventListener(
+        'load',
+        () => {
+          if (hoveredPointIndex === pointIndex) {
+            drawSprite(pointIndex, spriteSheet, SMALL_SPRITE_SIZE, SMALL_DISPLAY_SIZE);
+          }
+        },
+        {once: true}
+      );
     }
   }
 };
@@ -573,16 +589,9 @@ createClusterButtons();
 
 updateLoadingProgress(95); // UI initialized
 
-// Wait for sprite sheet to load before hiding loading screen
-if (spriteSheet.complete) {
-  updateLoadingProgress(100);
-  hideLoadingScreen();
-} else {
-  spriteSheet.addEventListener('load', () => {
-    updateLoadingProgress(100);
-    hideLoadingScreen();
-  });
-}
+// The hover sprite sheet is loaded lazily so it does not block app startup.
+updateLoadingProgress(100);
+hideLoadingScreen();
 
 // Add in a resize observer for automatic window resize.
 window.addEventListener('resize', () => {
