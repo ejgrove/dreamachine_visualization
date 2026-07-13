@@ -46,6 +46,7 @@ const makeVertexShader = (minPointSize: number) => `
 
     uniform bool sizeAttenuation;
     uniform float pointSize;
+    uniform float cameraZoom;
     uniform float spritesPerRow;
     uniform float spritesPerColumn;
 
@@ -79,7 +80,7 @@ const makeVertexShader = (minPointSize: number) => `
         const float maxScale = 10.0;  // maximum scaling factor
         const float inSpeed = 0.05;  // enlarge speed when zooming in
         const float zoomOffset = 0.05;  // offset zoom pivot
-        float zoom = projectionMatrix[0][0] + zoomOffset;  // zoom pivot
+        float zoom = cameraZoom + zoomOffset;  // zoom pivot
         float scale = zoom < 1. ? 1. + outNorm * atan(outSpeed * (zoom - 1.)) :
                       1. + 2. / PI * (maxScale - 1.) * atan(inSpeed * (zoom - 1.));
         outputPointSize = pointSize * scale;
@@ -292,6 +293,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
       isImage: {type: 'bool'},
       sizeAttenuation: {type: 'bool'},
       pointSize: {type: 'f'},
+      cameraZoom: {type: 'f', value: 1},
       borderWidth: {type: 'f', value: 0.05}, // Border width when clusters not selected
       borderWidthClustered: {type: 'f', value: 0.05}, // Border width when clusters selected
       useLargeBorder: {type: 'bool', value: false}, // Toggle between border widths
@@ -351,7 +353,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
   private calculatePointSize(sceneIs3D: boolean): number {
     const {imageSize} = this.styles.sprites;
     if (this.texture) {
-      return sceneIs3D ? imageSize : this.spriteDimensions[0];
+      return sceneIs3D ? imageSize : this.spriteDimensions[0] * 0.8;
     }
     const n =
       this.worldSpacePointPositions != null
@@ -523,10 +525,13 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
 
   onPickingRender(rc: RenderContext) {
     const sceneIs3D: boolean = rc.cameraType === CameraType.Perspective;
+    const cameraZoom =
+      rc.camera instanceof THREE.OrthographicCamera ? rc.camera.zoom : 1;
 
     this.pickingMaterial.uniforms.spritesPerRow.value = this.spritesPerRow;
     this.pickingMaterial.uniforms.spritesPerRow.value = this.spritesPerColumn;
     this.pickingMaterial.uniforms.sizeAttenuation.value = sceneIs3D;
+    this.pickingMaterial.uniforms.cameraZoom.value = cameraZoom;
     this.pickingMaterial.uniforms.pointSize.value = this.calculatePointSize(
       sceneIs3D
     );
@@ -553,6 +558,8 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
 
   onRender(rc: RenderContext) {
     const sceneIs3D: boolean = rc.camera instanceof THREE.PerspectiveCamera;
+    const cameraZoom =
+      rc.camera instanceof THREE.OrthographicCamera ? rc.camera.zoom : 1;
     this.setFogDistances(
       sceneIs3D,
       rc.nearestCameraSpacePointZ,
@@ -569,6 +576,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     this.renderMaterial.uniforms.spriteTexture.value =
       this.texture != null ? this.texture : this.standinTextureForPoints;
     this.renderMaterial.uniforms.sizeAttenuation.value = sceneIs3D;
+    this.renderMaterial.uniforms.cameraZoom.value = cameraZoom;
     this.renderMaterial.uniforms.pointSize.value = this.calculatePointSize(
       sceneIs3D
     );
