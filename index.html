@@ -550,6 +550,31 @@ limitations under the License.
         border-radius: 3px;
       }
 
+      #asset-loading-indicator {
+        position: fixed;
+        top: 72px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(247, 242, 234, 0.94);
+        border: 1px solid rgba(118, 95, 62, 0.12);
+        box-shadow: 0 10px 24px rgba(52, 41, 24, 0.08);
+        color: #5a4733;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        z-index: 1185;
+        backdrop-filter: blur(12px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+
+      #asset-loading-indicator.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-50%) translateY(-6px);
+      }
+
       @media (max-width: 768px) {
         #controls-toggle {
           top: 14px;
@@ -631,6 +656,13 @@ limitations under the License.
           max-width: 300px;
         }
 
+        #asset-loading-indicator {
+          top: 64px;
+          max-width: calc(100vw - 120px);
+          padding: 9px 12px;
+          font-size: 10px;
+        }
+
         .corner-credit {
           top: 14px;
           left: auto;
@@ -688,6 +720,13 @@ limitations under the License.
           margin-bottom: 10px;
         }
 
+        #asset-loading-indicator {
+          top: 60px;
+          max-width: calc(100vw - 150px);
+          font-size: 9px;
+          padding: 8px 10px;
+        }
+
         .cluster-button {
           padding: 6px;
           font-size: 11px;
@@ -729,6 +768,8 @@ limitations under the License.
         </div>
       </div>
     </div>
+
+    <div id="asset-loading-indicator">Loading drawings...</div>
 
     <div id="container"></div>
 
