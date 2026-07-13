@@ -111,6 +111,9 @@ const controlsCloseElement = document.getElementById('controls-close') as HTMLBu
 const aboutToggleElement = document.getElementById('about-trigger') as HTMLButtonElement;
 const aboutPanelElement = document.getElementById('about-panel')!;
 const aboutCloseElement = document.getElementById('about-close') as HTMLButtonElement;
+const clusterTriggerElement = document.getElementById('cluster-trigger') as HTMLButtonElement;
+const clusterPanelElement = document.getElementById('cluster-panel')!;
+const clusterCloseElement = document.getElementById('cluster-close') as HTMLButtonElement;
 const hoverCardElement = document.getElementById('hover-card')!;
 const hoverLabelElement = hoverCardElement.querySelector('.label')!;
 const hoverDescriptionElement = hoverCardElement.querySelector('.description')!;
@@ -119,8 +122,11 @@ const SMALL_SPRITE_SIZE = 50;
 const SMALL_DISPLAY_SIZE = 180;
 const HOVER_CARD_OFFSET = 20;
 const PANEL_STACK_GAP = 10;
+const CLUSTER_COMPACT_BREAKPOINT = 1100;
 const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
 const prefersCoarsePointer = () => coarsePointerQuery.matches;
+const isCompactClusterLayout = () => window.innerWidth <= CLUSTER_COMPACT_BREAKPOINT;
+let previousCompactClusterLayout = isCompactClusterLayout();
 
 let hoveredPointIndex: number | null = null;
 let hoverPointerX = window.innerWidth / 2;
@@ -262,6 +268,16 @@ const setAboutOpen = (isOpen: boolean) => {
   syncPanelLayout();
 };
 
+const setClusterPanelOpen = (isOpen: boolean) => {
+  const clustersEnabled =
+    document.querySelector<HTMLInputElement>('input[name="showClusters"]')?.checked ?? true;
+  const shouldOpen = clustersEnabled && isOpen;
+  clusterPanelElement.classList.toggle('open', shouldOpen);
+  clusterPanelElement.setAttribute('aria-hidden', String(!shouldOpen));
+  clusterTriggerElement.classList.toggle('hidden', !clustersEnabled || shouldOpen);
+  clusterTriggerElement.setAttribute('aria-expanded', String(shouldOpen));
+};
+
 controlsToggleElement.addEventListener('click', () => {
   setControlsOpen(!controlsElement.classList.contains('open'));
 });
@@ -276,6 +292,14 @@ aboutToggleElement.addEventListener('click', () => {
 
 aboutCloseElement.addEventListener('click', () => {
   setAboutOpen(false);
+});
+
+clusterTriggerElement.addEventListener('click', () => {
+  setClusterPanelOpen(!clusterPanelElement.classList.contains('open'));
+});
+
+clusterCloseElement.addEventListener('click', () => {
+  setClusterPanelOpen(false);
 });
 
 syncPanelLayout();
@@ -601,6 +625,11 @@ if (spriteSheet.complete && spriteSheet.naturalWidth > 0) {
 
 // Add in a resize observer for automatic window resize.
 window.addEventListener('resize', () => {
+  const compactClusterLayout = isCompactClusterLayout();
+  if (compactClusterLayout && !previousCompactClusterLayout) {
+    setClusterPanelOpen(false);
+  }
+  previousCompactClusterLayout = compactClusterLayout;
   scatterGL.resize();
   syncPanelLayout();
 });
@@ -656,6 +685,8 @@ const showClustersToggle = document.querySelector<HTMLInputElement>(
   'input[name="showClusters"]'
 )!;
 
+setClusterPanelOpen(showClustersToggle.checked && !isCompactClusterLayout());
+
 // Initialize with clusters shown (toggle is on by default)
 scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
   const labelIndex = currentDataset.metadata![i]['labelIndex'] as number;
@@ -676,11 +707,8 @@ scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
 });
 
 showClustersToggle.addEventListener('change', () => {
-  const clusterPanel = document.getElementById('cluster-panel')!;
-
   if (showClustersToggle.checked) {
-    // Show cluster panel
-    clusterPanel.style.display = 'block';
+    setClusterPanelOpen(!isCompactClusterLayout());
 
     // Show clusters with label colors
     scatterGL.setPointColorer((i, selectedIndices, hoverIndex) => {
@@ -701,8 +729,7 @@ showClustersToggle.addEventListener('change', () => {
       return LABEL_PALETTE[labelIndex % LABEL_PALETTE.length];
     });
   } else {
-    // Hide cluster panel
-    clusterPanel.style.display = 'none';
+    setClusterPanelOpen(false);
 
     // Hide clusters - use default coloring
     scatterGL.setPointColorer(null);
