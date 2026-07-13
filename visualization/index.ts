@@ -24,9 +24,17 @@ import {ScatterGL, RenderMode} from '../src';
 // Loading bar functionality
 const loadingOverlay = document.getElementById('loading-overlay')!;
 const loadingBar = document.getElementById('loading-bar')!;
+const loadingText = document.getElementById('loading-text')!;
+const spriteSheet = new Image();
+spriteSheet.decoding = 'async';
+spriteSheet.src = 'sprite.png';
 
 function updateLoadingProgress(progress: number) {
   loadingBar.style.width = `${progress}%`;
+}
+
+function updateLoadingMessage(message: string) {
+  loadingText.textContent = message;
 }
 
 function hideLoadingScreen() {
@@ -78,16 +86,17 @@ const filteredDataset = new Dataset(filteredDataPoints, filteredMetadata);
 updateLoadingProgress(60); // Filtered dataset created
 
 dataset.setSpriteMetadata({
-  spriteImage: 'sprite.png',
+  spriteImage: spriteSheet,
   singleSpriteSize: [50,50],
 });
 
 filteredDataset.setSpriteMetadata({
-  spriteImage: 'sprite.png',
+  spriteImage: spriteSheet,
   singleSpriteSize: [50, 50],
   spriteIndices: filteredSpriteIndices,
 });
 
+updateLoadingMessage('Loading drawings...');
 updateLoadingProgress(70); // Sprite metadata configured
 
 let lastSelectedPoints: number[] = [];
@@ -112,10 +121,6 @@ const HOVER_CARD_OFFSET = 20;
 const PANEL_STACK_GAP = 10;
 const coarsePointerQuery = window.matchMedia('(pointer: coarse)');
 const prefersCoarsePointer = () => coarsePointerQuery.matches;
-
-const spriteSheet = new Image();
-spriteSheet.decoding = 'async';
-let hoverSpriteSheetRequested = false;
 
 let hoveredPointIndex: number | null = null;
 let hoverPointerX = window.innerWidth / 2;
@@ -164,13 +169,6 @@ const hideHoverCard = () => {
   hoverCardElement.setAttribute('aria-hidden', 'true');
 };
 
-const ensureHoverSpriteSheet = () => {
-  if (!hoverSpriteSheetRequested) {
-    hoverSpriteSheetRequested = true;
-    spriteSheet.src = 'sprite.png';
-  }
-};
-
 const updateHoverInfo = (pointIndex: number | null) => {
   hoveredPointIndex = pointIndex;
 
@@ -190,8 +188,6 @@ const updateHoverInfo = (pointIndex: number | null) => {
     hoverLabelElement.textContent = String(label);
     hoverDescriptionElement.textContent = description;
     showHoverCard();
-
-    ensureHoverSpriteSheet();
 
     if (spriteSheet.complete && spriteSheet.naturalWidth > 0) {
       drawSprite(pointIndex, spriteSheet, SMALL_SPRITE_SIZE, SMALL_DISPLAY_SIZE);
@@ -589,9 +585,19 @@ createClusterButtons();
 
 updateLoadingProgress(95); // UI initialized
 
-// The hover sprite sheet is loaded lazily so it does not block app startup.
-updateLoadingProgress(100);
-hideLoadingScreen();
+if (spriteSheet.complete && spriteSheet.naturalWidth > 0) {
+  updateLoadingProgress(100);
+  hideLoadingScreen();
+} else {
+  spriteSheet.addEventListener(
+    'load',
+    () => {
+      updateLoadingProgress(100);
+      hideLoadingScreen();
+    },
+    {once: true}
+  );
+}
 
 // Add in a resize observer for automatic window resize.
 window.addEventListener('resize', () => {
