@@ -48,10 +48,10 @@ limitations under the License.
         touch-action: none;
       }
 
-      #controls-toggle {
+      #controls-toggle,
+      #about-trigger,
+      #cluster-trigger {
         position: fixed;
-        top: 18px;
-        left: 18px;
         z-index: 1200;
         display: inline-flex;
         align-items: center;
@@ -69,32 +69,30 @@ limitations under the License.
         letter-spacing: 0.01em;
       }
 
-      #about-trigger {
-        position: fixed;
+      #controls-toggle {
         top: 18px;
-        left: 140px;
-        z-index: 1200;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border: 0;
-        border-radius: 999px;
-        background: rgba(248, 243, 236, 0.94);
-        box-shadow: 0 10px 24px rgba(66, 50, 29, 0.10);
-        color: #2f2922;
-        cursor: pointer;
-        backdrop-filter: blur(14px);
-        font-size: 13px;
-        font-weight: 700;
-        letter-spacing: 0.01em;
+        left: 18px;
       }
 
-      #controls-toggle .material-icons {
+      #about-trigger {
+        top: 18px;
+        left: 140px;
+        color: #2f2922;
+      }
+
+      #cluster-trigger {
+        top: 18px;
+        right: 18px;
+        color: #3f3325;
+      }
+
+      #controls-toggle .material-icons,
+      #cluster-trigger .material-icons {
         font-size: 18px;
       }
 
-      #controls-toggle.hidden {
+      #controls-toggle.hidden,
+      #cluster-trigger.hidden {
         opacity: 0;
         pointer-events: none;
       }
@@ -288,6 +286,7 @@ limitations under the License.
         height: auto;
         max-height: calc(100vh - 36px);
         padding: 20px;
+        box-sizing: border-box;
         overflow-y: auto;
         overscroll-behavior: contain;
         background: rgba(245, 240, 232, 0.97);
@@ -295,23 +294,84 @@ limitations under the License.
         box-shadow: -14px 0 30px rgba(69, 55, 34, 0.08);
         border-radius: 20px;
         z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(24px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+
+      #cluster-panel.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+      }
+
+      .cluster-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .cluster-panel-heading {
+        min-width: 0;
+      }
+
+      .cluster-close {
+        border: 0;
+        background: rgba(122, 101, 72, 0.08);
+        color: #6a5741;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
       }
 
       @media (max-width: 1100px) {
+        #cluster-trigger {
+          top: auto;
+          right: auto;
+          left: 50%;
+          bottom: 14px;
+          transform: translateX(-50%);
+        }
+
         #cluster-panel {
           top: auto;
           right: 14px;
           left: 14px;
           bottom: 14px;
           width: auto;
-          max-height: min(44vh, 360px);
+          max-height: min(34vh, 280px);
           border-radius: 20px;
           border-left: 0;
           box-shadow: 0 -10px 26px rgba(40, 34, 26, 0.12);
+          transform: translateY(26px);
+        }
+
+        #cluster-panel.open {
+          transform: translateY(0);
         }
 
         #hover-card {
           width: min(34vw, 320px);
+        }
+
+        .corner-credit {
+          top: 18px;
+          left: auto;
+          right: 18px;
+          bottom: auto;
+          max-width: min(320px, calc(100vw - 280px));
+          transform: none;
+          padding: 10px 12px;
+          font-size: 10px;
+          text-align: left;
         }
       }
 
@@ -505,6 +565,12 @@ limitations under the License.
           min-height: 44px;
         }
 
+        #cluster-trigger {
+          bottom: 14px;
+          padding: 10px 14px;
+          min-height: 44px;
+        }
+
         #controls {
           top: 62px;
           left: 14px;
@@ -515,15 +581,14 @@ limitations under the License.
         }
 
         #cluster-panel {
-          width: 100%;
           height: auto;
-          max-height: min(54vh, 360px);
+          max-height: min(32vh, 250px);
           top: auto;
-          right: 0;
-          left: 0;
-          bottom: 0;
+          right: 12px;
+          left: 12px;
+          bottom: 12px;
           box-shadow: 0 -10px 26px rgba(40, 34, 26, 0.12);
-          border-radius: 20px 20px 0 0;
+          border-radius: 18px;
           border-left: 0;
           padding: 15px;
         }
@@ -567,18 +632,19 @@ limitations under the License.
         }
 
         .corner-credit {
-          left: 14px;
+          top: 14px;
+          left: auto;
           right: 14px;
-          bottom: 14px;
-          max-width: none;
-          padding: 10px 12px;
-          font-size: 10px;
+          bottom: auto;
+          max-width: min(220px, calc(100vw - 238px));
+          transform: none;
         }
       }
 
       @media (max-width: 480px) {
         #controls-toggle,
-        #about-trigger {
+        #about-trigger,
+        #cluster-trigger {
           top: 12px;
           padding: 10px 12px;
           min-height: 44px;
@@ -590,8 +656,15 @@ limitations under the License.
         }
 
         #about-trigger {
-          left: auto;
-          right: 12px;
+          left: 124px;
+          right: auto;
+        }
+
+        #cluster-trigger {
+          top: auto;
+          right: auto;
+          left: 50%;
+          bottom: 12px;
         }
 
         #controls {
@@ -603,10 +676,10 @@ limitations under the License.
         }
 
         #cluster-panel {
-          left: 0;
-          right: 0;
-          bottom: 0;
-          max-height: min(58vh, 380px);
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
+          max-height: min(30vh, 220px);
           padding: 12px;
         }
 
@@ -633,9 +706,16 @@ limitations under the License.
         }
 
         .corner-credit {
-          left: 12px;
+          top: 12px;
+          left: auto;
           right: 12px;
-          bottom: 12px;
+          bottom: auto;
+          width: auto;
+          max-width: min(118px, calc(100vw - 226px));
+          padding: 8px 10px;
+          font-size: 9px;
+          line-height: 1.35;
+          transform: none;
         }
       }
     </style>
@@ -643,7 +723,7 @@ limitations under the License.
   <body>
     <div id="loading-overlay">
       <div class="loading-content">
-        <div class="loading-text">Loading Visualization...</div>
+        <div class="loading-text" id="loading-text">Loading visualization...</div>
         <div class="loading-bar-container">
           <div class="loading-bar" id="loading-bar"></div>
         </div>
@@ -659,6 +739,10 @@ limitations under the License.
     <button id="about-trigger" type="button" aria-expanded="false" aria-controls="about-panel">
       <span class="material-icons">info</span>
       <span>About</span>
+    </button>
+    <button id="cluster-trigger" type="button" aria-expanded="false" aria-controls="cluster-panel">
+      <span class="material-icons">grid_view</span>
+      <span>Clusters</span>
     </button>
 
     <aside id="controls" aria-hidden="true">
@@ -781,9 +865,16 @@ limitations under the License.
       </div>
     </div>
 
-    <div id="cluster-panel">
-      <h5>Clusters</h5>
-      <div class="cluster-help">Select a cluster or click on a drawing</div>
+    <div id="cluster-panel" aria-hidden="true">
+      <div class="cluster-panel-header">
+        <div class="cluster-panel-heading">
+          <h5>Clusters</h5>
+          <div class="cluster-help">Select a cluster or click on a drawing</div>
+        </div>
+        <button class="cluster-close" id="cluster-close" type="button" aria-label="Close clusters">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
       <div id="cluster-buttons"></div>
     </div>
   <script type="text/javascript" src="bundle.min.js"></script></body>
