@@ -25,6 +25,7 @@ import {ScatterGL, RenderMode} from '../src';
 const loadingOverlay = document.getElementById('loading-overlay')!;
 const loadingBar = document.getElementById('loading-bar')!;
 const loadingText = document.getElementById('loading-text')!;
+const assetLoadingIndicator = document.getElementById('asset-loading-indicator')!;
 const spriteSheet = new Image();
 spriteSheet.decoding = 'async';
 spriteSheet.src = 'sprite.png';
@@ -42,6 +43,10 @@ function hideLoadingScreen() {
   setTimeout(() => {
     loadingOverlay.style.display = 'none';
   }, 300); // Wait for fade out transition
+}
+
+function hideAssetLoadingIndicator() {
+  assetLoadingIndicator.classList.add('hidden');
 }
 
 // Simulate loading progress
@@ -609,18 +614,20 @@ createClusterButtons();
 
 updateLoadingProgress(95); // UI initialized
 
+updateLoadingProgress(100);
+hideLoadingScreen();
+
 if (spriteSheet.complete && spriteSheet.naturalWidth > 0) {
-  updateLoadingProgress(100);
-  hideLoadingScreen();
+  hideAssetLoadingIndicator();
 } else {
   spriteSheet.addEventListener(
     'load',
     () => {
-      updateLoadingProgress(100);
-      hideLoadingScreen();
+      hideAssetLoadingIndicator();
     },
     {once: true}
   );
+  spriteSheet.addEventListener('error', hideAssetLoadingIndicator, {once: true});
 }
 
 // Add in a resize observer for automatic window resize.
