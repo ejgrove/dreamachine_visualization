@@ -29,11 +29,10 @@ const assetLoadingIndicator = document.getElementById('asset-loading-indicator')
 const spriteSheet = new Image();
 spriteSheet.decoding = 'async';
 spriteSheet.onerror = () => {
-  if (!spriteSheet.src.endsWith('sprite.png')) {
-    spriteSheet.src = 'sprite.png';
-  }
+  updateLoadingMessage('Unable to load drawings');
+  hideAssetLoadingIndicator();
 };
-spriteSheet.src = 'sprite.webp';
+spriteSheet.src = 'sprite_image_100.webp';
 
 function updateLoadingProgress(progress: number) {
   loadingBar.style.width = `${progress}%`;
@@ -97,12 +96,12 @@ updateLoadingProgress(60); // Filtered dataset created
 
 dataset.setSpriteMetadata({
   spriteImage: spriteSheet,
-  singleSpriteSize: [50,50],
+  singleSpriteSize: [100,100],
 });
 
 filteredDataset.setSpriteMetadata({
   spriteImage: spriteSheet,
-  singleSpriteSize: [50, 50],
+  singleSpriteSize: [100, 100],
   spriteIndices: filteredSpriteIndices,
 });
 
@@ -128,7 +127,7 @@ const hoverCardElement = document.getElementById('hover-card')!;
 const hoverLabelElement = hoverCardElement.querySelector('.label')!;
 const hoverDescriptionElement = hoverCardElement.querySelector('.description')!;
 const hoverCanvasElement = hoverCardElement.querySelector('.sprite-image') as HTMLCanvasElement;
-const SMALL_SPRITE_SIZE = 50;
+const SMALL_SPRITE_SIZE = 100;
 const SMALL_DISPLAY_SIZE = 140;
 const HOVER_CARD_OFFSET = 20;
 const PANEL_STACK_GAP = 10;
