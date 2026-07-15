@@ -353,7 +353,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
   private calculatePointSize(sceneIs3D: boolean): number {
     const {imageSize} = this.styles.sprites;
     if (this.texture) {
-      return sceneIs3D ? imageSize : this.spriteDimensions[0] * 0.8;
+      return sceneIs3D ? imageSize : this.spriteDimensions[0] * 0.4;
     }
     const n =
       this.worldSpacePointPositions != null
