@@ -28,7 +28,12 @@ const loadingText = document.getElementById('loading-text')!;
 const assetLoadingIndicator = document.getElementById('asset-loading-indicator')!;
 const spriteSheet = new Image();
 spriteSheet.decoding = 'async';
-spriteSheet.src = 'sprite.png';
+spriteSheet.onerror = () => {
+  if (!spriteSheet.src.endsWith('sprite.png')) {
+    spriteSheet.src = 'sprite.png';
+  }
+};
+spriteSheet.src = 'sprite.webp';
 
 function updateLoadingProgress(progress: number) {
   loadingBar.style.width = `${progress}%`;
